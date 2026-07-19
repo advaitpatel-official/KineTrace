@@ -10,7 +10,7 @@ if not csv_files:
 target_file = csv_files[0]
 print(f"🚀 Sending real telemetry file: {target_file}")
 
-url = "https://kinetrace-engine.onrender.com/api/ingest"
+url = "https://kinetrace.onrender.com/api/ingest"
 with open(target_file, "rb") as f:
     files = {"file": (os.path.basename(target_file), f, "text/csv")}
     response = requests.post(url, files=files)

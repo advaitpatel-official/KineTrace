@@ -115,7 +115,7 @@ function AnalyzerDashboard() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await fetch("https://kinetrace-engine.onrender.com/api/status");
+        const res = await fetch("https://kinetrace.onrender.com/api/status");
         if (res.ok) { const data = await res.json(); setMlOnline(data.online !== false); }
       } catch { setMlOnline(true); }
     };
@@ -327,7 +327,7 @@ function AnalyzerDashboard() {
       const headers = Object.keys(data[0]).join(","); const rows = data.map(obj => Object.values(obj).join(",")).join("\n");
       const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
       const formData = new FormData(); formData.append('file', blob, 'kinetrace_workspace_matrix.csv');
-      const response = await fetch("https://kinetrace-engine.onrender.com/api/ingest", { method: "POST", body: formData });
+      const response = await fetch("https://kinetrace.onrender.com/api/ingest", { method: "POST", body: formData });
       if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.detail || "ML Engine rejected the data."); }
       const result = await response.json();
       if (result.status === "success") {
@@ -468,7 +468,7 @@ function AnalyzerDashboard() {
                 <p className="text-[11px] text-muted-foreground leading-relaxed">Use this template to collect sensor data. Match the column format exactly for successful ingestion.</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={downloadDataTemplate} className="flex-1 rounded-lg border border-hairline px-3 py-2 font-mono text-[10px] text-foreground hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-filetype-csv mr-1" /> Download Template</button>
-                  <button type="button" onClick={async () => { try { const res = await fetch("https://kinetrace-engine.onrender.com/api/export/csv"); if (res.ok) { const blob = await res.blob(); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "kinetrace_sample_data.csv"; link.click(); URL.revokeObjectURL(url); } } catch { downloadDataTemplate(); } }} className="flex-1 rounded-lg border border-hairline px-3 py-2 font-mono text-[10px] text-foreground hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-database mr-1" /> Get Sample</button>
+                  <button type="button" onClick={async () => { try { const res = await fetch("https://kinetrace.onrender.com/api/export/csv"); if (res.ok) { const blob = await res.blob(); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "kinetrace_sample_data.csv"; link.click(); URL.revokeObjectURL(url); } } catch { downloadDataTemplate(); } }} className="flex-1 rounded-lg border border-hairline px-3 py-2 font-mono text-[10px] text-foreground hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-database mr-1" /> Get Sample</button>
                 </div>
                 <div className="bg-foreground/2 rounded-lg p-3 font-mono text-[9px] text-muted-foreground leading-relaxed"><div className="font-medium mb-1">Expected CSV format:</div><code className="block">timestamp_ms,ax,ay,az,gx,gy,gz</code><code className="block">0,0.120,0.940,-0.050,0.020,-0.010,0.040</code></div>
               </div>
