@@ -44,7 +44,7 @@ export default function KinetraceTool() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/api/ingest", {
+      const response = await fetch("https://kinetrace.onrender.com", {
         method: "POST",
         body: formData,
       });
