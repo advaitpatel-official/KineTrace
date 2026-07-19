@@ -2,10 +2,19 @@ import React, { useState, useRef } from "react";
 
 interface IngestResponse {
   status: string;
+  predicted_activity: string;
   mean_kinetic_stability_index: number;
   estimated_clinical_tug_score: number;
-  windows_processed: number;
-  activity_timeline: number[];
+  stabilityState: string;
+  signals: {
+    acc_magnitude: number[];
+    jerk_acc: number[];
+    mean_abs_jerk: number;
+    std_dev: number;
+  };
+  windows: number;
+  total_frames: number;
+  sampling_rate: number;
 }
 
 export default function KinetraceTool() {
@@ -44,7 +53,7 @@ export default function KinetraceTool() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("https://kinetrace.onrender.com", {
+      const response = await fetch("https://kinetrace.onrender.com/api/ingest", {
         method: "POST",
         body: formData,
       });

@@ -117,7 +117,7 @@ function AnalyzerDashboard() {
       try {
         const res = await fetch("https://kinetrace.onrender.com/api/status");
         if (res.ok) { const data = await res.json(); setMlOnline(data.online !== false); }
-      } catch { setMlOnline(true); }
+      } catch { setMlOnline(false); }
     };
     checkStatus();
     const interval = setInterval(checkStatus, 15000);
@@ -330,12 +330,12 @@ function AnalyzerDashboard() {
       const response = await fetch("https://kinetrace.onrender.com/api/ingest", { method: "POST", body: formData });
       if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.detail || "ML Engine rejected the data."); }
       const result = await response.json();
-      if (result.status === "success") {
-        setPredictionResult(`TUG: ${result.estimated_clinical_tug_score.toFixed(2)}s | KSI: ${result.mean_kinetic_stability_index.toFixed(1)}`);
-        setRealCsi(result.mean_kinetic_stability_index); setRealKsi(Math.round(result.mean_kinetic_stability_index * 0.85));
+        if (result.status === "success") {
+        const rawKsi = result.mean_kinetic_stability_index;
+        setPredictionResult(`TUG: ${result.estimated_clinical_tug_score.toFixed(2)}s | KSI: ${rawKsi.toFixed(1)}`);
+        setRealCsi(rawKsi); setRealKsi(Math.round(rawKsi));
         setRealPredictedActivity(result.predicted_activity || "");
-        if (result.windows && result.windows.length > 0) { setComputedWindows(result.windows.map((w: Record<string, unknown>) => ({ id: w.id as string, timestamp: (w.timestamp as string) || "00:00.00", activity: (w.activity as WindowMetric["activity"]) || "Walking", csi: w.ksi as number, ksi: Math.round((w.ksi as number) * 0.85), jerk: w.jerk as number, variance: w.variance as number, stabilityState: (w.stabilityState as WindowMetric["stabilityState"]) || "Optimal" }))); }
-        else { generateLocalWindows(data); }
+        generateLocalWindows(data);
       } else { setApiError(result.message || "Pipeline uncalibrated."); }
     } catch (err) { console.error("ML Engine Error:", err); generateLocalWindows(data); setApiError(null); }
     finally { setIsAnalyzing(false); }
