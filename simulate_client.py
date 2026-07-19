@@ -3,7 +3,7 @@ import json
 import time
 import pandas as pd
 
-HOST = "127.0.0.1"
+HOST = "https://kinetrace.onrender.com/"
 PORT = 65432
 
 print("Reading dataset to stream simulated live packets...")

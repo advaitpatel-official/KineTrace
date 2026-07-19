@@ -19,7 +19,7 @@ def calculate_single_ksi(jerk, std):
     score = 100.0 - (alpha * jerk + beta * std)
     return float(np.clip(score, 0.0, 100.0))
 
-HOST = "127.0.0.1"
+HOST = "https://kinetrace.onrender.com/"
 PORT = 65432
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
