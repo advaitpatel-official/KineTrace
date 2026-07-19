@@ -55,7 +55,8 @@ function AnalyzerDashboard() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [predictionResult, setPredictionResult] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [mlOnline, setMlOnline] = useState<boolean>(true);
+  const [mlOnline, setMlOnline] = useState<boolean>(false);
+  const [mlWaking, setMlWaking] = useState<boolean>(true);
 
   const [computedWindows, setComputedWindows] = useState<WindowMetric[]>([]);
   const [realCsi, setRealCsi] = useState<number>(0);
@@ -112,16 +113,40 @@ function AnalyzerDashboard() {
     if (rowLimit > maxAvailableRows) setRowLimit(maxAvailableRows);
   }, [maxAvailableRows, rowLimit]);
 
+  // Warm up the free-tier Render backend on page load + periodic health checks
   useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await fetch("https://kinetrace.onrender.com/api/status");
-        if (res.ok) { const data = await res.json(); setMlOnline(data.online !== false); }
-      } catch { setMlOnline(false); }
+    let cancelled = false;
+    const wakeUp = async () => {
+      setMlWaking(true);
+      for (let attempt = 0; attempt < 12; attempt++) {
+        if (cancelled) return;
+        try {
+          const res = await fetch("https://kinetrace.onrender.com/api/health", { signal: AbortSignal.timeout(8000) });
+          if (res.ok) {
+            const data = await res.json();
+            if (!cancelled) {
+              setMlOnline(data.status === "healthy");
+              setMlWaking(false);
+            }
+            return;
+          }
+        } catch {
+          // server still spinning up, wait and retry
+        }
+        // Wait 3s between retries (total ~36s max)
+        await new Promise(r => setTimeout(r, 3000));
+      }
+      if (!cancelled) setMlWaking(false);
     };
-    checkStatus();
-    const interval = setInterval(checkStatus, 15000);
-    return () => clearInterval(interval);
+    wakeUp();
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      try {
+        const res = await fetch("https://kinetrace.onrender.com/api/status", { signal: AbortSignal.timeout(5000) });
+        if (res.ok) { const data = await res.json(); if (!cancelled) setMlOnline(data.online !== false); }
+      } catch { if (!cancelled) setMlOnline(false); }
+    }, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   const filterModifier = useMemo(() => {
@@ -172,7 +197,7 @@ function AnalyzerDashboard() {
   useEffect(() => { if (selectedFrameIndex >= processedData.length && processedData.length > 0) setSelectedFrameIndex(processedData.length - 1); }, [processedData, selectedFrameIndex]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying && waveformData.length > 0) {
       const tickRate = 20 / playbackSpeed;
       interval = setInterval(() => {
@@ -324,10 +349,15 @@ function AnalyzerDashboard() {
     if (data.length === 0) return;
     setIsAnalyzing(true); setApiError(null); setPredictionResult(null);
     try {
-      const headers = Object.keys(data[0]).join(","); const rows = data.map(obj => Object.values(obj).join(",")).join("\n");
+      // Downsample to max 500 frames to avoid timeout on free tier
+      const sample = data.length > 500
+        ? data.filter((_, i) => i % Math.ceil(data.length / 500) === 0).slice(0, 500)
+        : data;
+      const headers = "timestamp_ms,ax,ay,az,gx,gy,gz,magnitude";
+      const rows = sample.map(obj => `${obj.timestamp_ms},${obj.ax.toFixed(4)},${obj.ay.toFixed(4)},${obj.az.toFixed(4)},${obj.gx.toFixed(4)},${obj.gy.toFixed(4)},${obj.gz.toFixed(4)},${obj.magnitude.toFixed(4)}`).join("\n");
       const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
       const formData = new FormData(); formData.append('file', blob, 'kinetrace_workspace_matrix.csv');
-      const response = await fetch("https://kinetrace.onrender.com/api/ingest", { method: "POST", body: formData });
+      const response = await fetch("https://kinetrace.onrender.com/api/ingest", { method: "POST", body: formData, signal: AbortSignal.timeout(25000) });
       if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.detail || "ML Engine rejected the data."); }
       const result = await response.json();
         if (result.status === "success") {
@@ -341,7 +371,7 @@ function AnalyzerDashboard() {
     finally { setIsAnalyzing(false); }
   }, []);
 
-  const generateLocalWindows = (data: TelemetryFrame[]) => {
+  const generateLocalWindows = useCallback((data: TelemetryFrame[]) => {
     const windowSize = 20, localWindows: WindowMetric[] = [];
     for (let i = 0; i < data.length && localWindows.length < 20; i += windowSize / 2) {
       const end = Math.min(i + windowSize, data.length);
@@ -363,7 +393,7 @@ function AnalyzerDashboard() {
     }
     setComputedWindows(localWindows);
     if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); }
-  };
+  }, [filterModifier]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -435,7 +465,7 @@ function AnalyzerDashboard() {
         <Link to="/" className="inline-flex items-center gap-2 font-mono text-xs tracking-tight hover:underline"><i className="bi bi-arrow-left" /> kinetrace</Link>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 font-mono text-[9px] text-muted-foreground">
-            <span className={`inline-block h-1.5 w-1.5 rounded-full ${isAnalyzing ? "bg-yellow-500 animate-pulse" : "bg-emerald-500"}`} /><span>ML Engine</span>
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${mlWaking ? "bg-yellow-500 animate-pulse" : mlOnline ? "bg-emerald-500" : "bg-red-500"}`} /><span>{mlWaking ? "Waking ML..." : mlOnline ? "ML Engine" : "ML Offline (local)"}</span>
             {predictionResult && <span className="text-foreground/60 ml-1 hidden sm:inline">{predictionResult}</span>}
           </div>
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Workspace</div>
@@ -458,7 +488,7 @@ function AnalyzerDashboard() {
           <section className="space-y-6 lg:col-span-5">
             <div className="rounded-2xl border border-hairline p-6 bg-background/30">
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground block mb-4">Import</span>
-              <div className="group flex flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-background/20 px-4 py-10 text-center transition-colors hover:bg-foreground/1 cursor-pointer">
+              <div onClick={triggerFilePicker} className="group flex flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-background/20 px-4 py-10 text-center transition-colors hover:bg-foreground/1 cursor-pointer">
                 {isProcessing ? (<div className="space-y-2"><div className="mx-auto h-4 w-4 animate-spin rounded-full border border-foreground border-t-transparent" /><span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">Merging Data Packets...</span></div>) : (<><div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline bg-background"><i className="bi bi-plus-lg text-xs" /></div><h3 className="mt-3 font-display text-sm tracking-tight">Import sensor capture logs</h3><p className="text-[11px] text-muted-foreground mt-1">Supports raw CSV, TXT, or JSON exports</p></>)}
               </div>
             </div>
