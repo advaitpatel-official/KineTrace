@@ -310,19 +310,21 @@ function Index() {
               <div className="grid grid-cols-12 gap-4 py-6">
                 <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Profiles</div>
                 <div className="col-span-6 md:col-span-4 self-end text-sm">
-                  <a href="#" className="inline-flex items-center gap-2 hover:underline">
+                  <a href="https://www.linkedin.com/in/advait-patel-a2a6323aa/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
                     <i className="bi bi-linkedin" aria-hidden /> LinkedIn
                   </a>
                 </div>
-                <div className="col-span-6 md:col-span-4 self-end text-sm text-muted-foreground">
-                  Research inquiries welcome
+                <div className="col-span-6 md:col-span-4 self-end text-sm">
+                  <a href="https://github.com/advaitpatel-official/KineTrace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
+                    <i className="bi bi-github" aria-hidden /> GitHub
+                  </a>
                 </div>
               </div>
               <div className="hairline-t grid grid-cols-12 gap-4 py-6">
                 <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Contact</div>
                 <div className="col-span-6 md:col-span-4 self-end text-sm">
-                  <a href="mailto:hello@kinetrace.dev" className="inline-flex items-center gap-2 hover:underline">
-                    <i className="bi bi-envelope" aria-hidden /> hello@kinetrace.dev
+                  <a href="mailto:advait.patel@outlook.com" className="inline-flex items-center gap-2 hover:underline">
+                    <i className="bi bi-envelope" aria-hidden /> advait.patel@outlook.com
                   </a>
                 </div>
                 <div className="col-span-6 md:col-span-4 self-end text-sm">

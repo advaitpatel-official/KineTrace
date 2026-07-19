@@ -365,13 +365,14 @@ function AnalyzerDashboard() {
         setPredictionResult(`TUG: ${result.estimated_clinical_tug_score.toFixed(2)}s | KSI: ${rawKsi.toFixed(1)}`);
         setRealCsi(rawKsi); setRealKsi(Math.round(rawKsi));
         setRealPredictedActivity(result.predicted_activity || "");
-        generateLocalWindows(data);
+        // Still compute windows locally for display but don't overwrite the backend prediction text
+        generateLocalWindows(data, true);
       } else { setApiError(result.message || "Pipeline uncalibrated."); }
     } catch (err) { console.error("ML Engine Error:", err); generateLocalWindows(data); setApiError(null); }
     finally { setIsAnalyzing(false); }
   }, []);
 
-  const generateLocalWindows = useCallback((data: TelemetryFrame[]) => {
+  const generateLocalWindows = useCallback((data: TelemetryFrame[], skipLabelOverride = false) => {
     const windowSize = 20, localWindows: WindowMetric[] = [];
     for (let i = 0; i < data.length && localWindows.length < 20; i += windowSize / 2) {
       const end = Math.min(i + windowSize, data.length);
@@ -392,7 +393,7 @@ function AnalyzerDashboard() {
       localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
     }
     setComputedWindows(localWindows);
-    if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); }
+    if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); if (!skipLabelOverride) { setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); } }
   }, [filterModifier]);
 
   useEffect(() => {
