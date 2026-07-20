@@ -189,7 +189,7 @@ export function StickyNav() {
         Analyzer
       </Link>
       <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-foreground/15" />
-      <ThemeToggle className="shrink-0" />
+      <ThemeToggle className="shrink-0 mr-0.5" />
     </nav>
   );
 

@@ -227,11 +227,9 @@ function AnalyzerDashboard() {
     for (let i = 1; i < processedData.length; i++) { if ((processedData[i-1].ax < 0 && processedData[i].ax >= 0) || (processedData[i-1].ax >= 0 && processedData[i].ax < 0)) zeroCrossings++; }
     const zeroCrossRate = zeroCrossings / processedData.length;
 
-    const avgCsi = realCsi > 0 ? realCsi : 50;
-    const variabilityFactor = Math.min(1.5, Math.max(0.5, 1 + (zeroCrossRate - 0.1) * 2));
-    const ksiFromData = Math.max(0, Math.min(100, Math.round(avgCsi / variabilityFactor)));
-    const avgKsi = realKsi > 0 ? realKsi : ksiFromData;
-    const riskLevel = avgKsi > 75 ? "Low" : avgKsi > 50 ? "Moderate" : avgKsi > 30 ? "Elevated" : "High";
+    const avgCsi = realCsi > 0 ? realCsi : 0;
+    const avgKsi = realKsi > 0 ? realKsi : 0;
+    const riskLevel = avgKsi <= 0 ? "Unknown" : avgKsi > 75 ? "Low" : avgKsi > 50 ? "Moderate" : avgKsi > 30 ? "Elevated" : "High";
 
     return {
       avgCsi: Math.round(avgCsi), avgKsi: Math.round(avgKsi),
@@ -356,11 +354,10 @@ function AnalyzerDashboard() {
       let jerkSum = 0; for (let j = 1; j < mags.length; j++) jerkSum += Math.abs(mags[j] - mags[j-1]);
       const meanJerk = (jerkSum / (mags.length - 1)) * 50 * filterModifier.jerkMultiplier;
       const adjustedStd = std + filterModifier.varianceShift;
-      const csi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk + 20 * Math.max(0.01, adjustedStd)))));
+      const csi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk))));
       let zeroCross = 0; for (let j = 1; j < mags.length; j++) { if ((mags[j-1] < 1 && mags[j] >= 1) || (mags[j-1] >= 1 && mags[j] < 1)) zeroCross++; }
-      const variabilityFactor = Math.min(1.5, Math.max(0.5, 1 + (zeroCross / mags.length - 0.1) * 3));
-      const ksi = Math.max(0, Math.min(100, Math.round(csi / variabilityFactor)));
-      const state: WindowMetric["stabilityState"] = csi > 75 ? "Optimal" : csi > 40 ? "Degraded" : "Critical";
+      const ksi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk + 20 * Math.max(0.01, adjustedStd)))));
+      const state: WindowMetric["stabilityState"] = ksi > 75 ? "Optimal" : ksi > 40 ? "Degraded" : "Critical";
       let activity: WindowMetric["activity"];
       if (std < 0.03) activity = "Sitting"; else if (std < 0.06) activity = "Standing"; else if (std > 0.18) activity = "Stairs Up"; else if (std > 0.12) activity = "Stairs Down"; else activity = "Walking";
       localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
@@ -430,7 +427,7 @@ function AnalyzerDashboard() {
   const getRiskBadge = (risk: string) => { switch (risk) { case "Low": return "bg-emerald-500/10 text-emerald-500"; case "Moderate": return "bg-yellow-500/10 text-yellow-500"; case "Elevated": return "bg-orange-500/10 text-orange-500"; case "High": return "bg-red-500/10 text-red-500"; default: return "bg-foreground/5 text-muted-foreground"; } };
 
   const exportAnalyticsReport = () => {
-    const report = `KineTrace Analytics Report\nGenerated: ${new Date().toISOString()}\nFilter: ${activeFilter}\nTotal Frames: ${processedData.length}\nWindows Analyzed: ${computedWindows.length}\nCurrent Stability Index (CSI): ${summaryStats.avgCsi}\nPredictive Risk Index (KSI): ${summaryStats.avgKsi}\nRisk Level: ${summaryStats.riskLevel}\nPeak Jerk: ${summaryStats.maxJerk} m/s³\nSignal Variance: ${summaryStats.signalVariance}\nPeak Acceleration: ${summaryStats.peakAccel} g\nTotal Energy: ${summaryStats.totalEnergy}\nZero-Crossing Rate: ${summaryStats.zeroCrossRate}\nStability Assessment: ${summaryStats.avgCsi > 75 ? "Good" : summaryStats.avgCsi > 40 ? "Degraded" : "Critical"}\n`;
+    const report = `KineTrace Analytics Report\nGenerated: ${new Date().toISOString()}\nFilter: ${activeFilter}\nTotal Frames: ${processedData.length}\nWindows Analyzed: ${computedWindows.length}\nCurrent Stability Index (CSI): ${summaryStats.avgCsi}\nPredictive Risk Index (KSI): ${summaryStats.avgKsi}\nRisk Level: ${summaryStats.riskLevel}\nPeak Jerk: ${summaryStats.maxJerk} m/s³\nSignal Variance: ${summaryStats.signalVariance}\nPeak Acceleration: ${summaryStats.peakAccel} g\nTotal Energy: ${summaryStats.totalEnergy}\nZero-Crossing Rate: ${summaryStats.zeroCrossRate}\nStability Assessment: ${summaryStats.avgKsi > 75 ? "Good" : summaryStats.avgKsi > 40 ? "Degraded" : "Critical"}\n`;
     const blob = new Blob([report], { type: "text/plain" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.download = `kinetrace_report_${Date.now()}.txt`; link.href = url; link.click(); URL.revokeObjectURL(url);
   };
 
