@@ -51,6 +51,8 @@ function AnalyzerDashboard() {
   const [activeFilter, setActiveFilter] = useState("Butterworth lowpass");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const speedDropdownRef = useRef<HTMLDivElement>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [predictionResult, setPredictionResult] = useState<string | null>(null);
@@ -106,6 +108,30 @@ function AnalyzerDashboard() {
       setShowMobileWarning(true);
     }
   }, []);
+
+  // Close filter dropdown on click outside
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isDropdownOpen]);
+
+  // Close speed dropdown on click outside
+  useEffect(() => {
+    if (!isSpeedDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (speedDropdownRef.current && !speedDropdownRef.current.contains(e.target as Node)) {
+        setIsSpeedDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isSpeedDropdownOpen]);
 
   const maxAvailableRows = useMemo(() => Math.max(10, telemetryPool.length), [telemetryPool]);
 
@@ -520,7 +546,7 @@ function AnalyzerDashboard() {
                   <div className="relative pt-1"><input type="range" min="0.00" max="2.00" step="0.01" value={noiseFloor} onChange={(e) => { setNoiseFloor(parseFloat(e.target.value)); setCurrentPage(1); }} className="w-full h-1 bg-foreground/10 rounded-lg cursor-ew-resize appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-2 [&::-moz-range-thumb]:bg-foreground [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full" /></div>
                 </div>
               </div>
-              <div className="border-t border-hairline pt-4 relative"><h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Signal Processor</h4>
+              <div className="border-t border-hairline pt-4 relative" ref={dropdownRef}><h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Signal Processor</h4>
                 <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-full bg-background border border-hairline rounded-lg px-3 py-2 font-mono text-xs text-foreground flex justify-between items-center text-left transition-colors hover:bg-foreground/2"><span>{activeFilter}</span><i className={`bi bi-chevron-down text-[10px] transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} /></button>
                 {isDropdownOpen && (<div className="mt-1 bg-background border border-hairline rounded-lg z-30 overflow-hidden shadow-none">{filterOptions.map((opt) => (<button key={opt} type="button" onClick={() => { setActiveFilter(opt); setIsDropdownOpen(false); }} className={`w-full text-left px-3 py-2 font-mono text-xs transition-colors hover:bg-foreground/4 block ${activeFilter === opt ? "bg-foreground/5 font-medium text-foreground" : "text-foreground/70"}`}>{opt}</button>))}</div>)}
                 <div className="mt-2 text-[9px] font-mono text-muted-foreground italic">{filterModifier.description}</div>
@@ -557,9 +583,9 @@ function AnalyzerDashboard() {
                   <div className="mb-3 flex items-center justify-between font-mono text-[9px] uppercase tracking-wider text-muted-foreground"><span>Live Waveform</span><div className="flex items-center gap-3"><button type="button" onClick={() => exportCanvasAsImage(canvasRef, "png")} disabled={paginatedData.length === 0} className="text-[9px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 disabled:opacity-40"><i className="bi bi-download" /> Export</button><span className="text-blue-500">■ ax</span><span className="text-emerald-500">■ ay</span><span className="text-red-500">■ az</span><span className="text-purple-500">■ |a|</span></div></div>
                   <div className="mb-3 flex items-center gap-2 font-mono text-[9px]">
                     <span className="text-muted-foreground">Range:</span>
-                    <input type="number" min="0" max={Math.max(0, processedData.length - 1)} value={waveformStartInput} onChange={(e) => { const v = Math.max(0, Math.min(Number(e.target.value) || 0, processedData.length - 1)); setWaveformStartInput(String(v)); }} onBlur={() => { const v = Math.max(0, Math.min(Number(waveformStartInput) || 0, processedData.length - 1)); setWaveformStart(v); setWaveformStartInput(String(v)); }} className="w-16 px-1 py-0.5 rounded border border-hairline bg-background text-foreground text-[9px] text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                    <input type="number" min="0" max={Math.max(0, processedData.length - 1)} value={waveformStartInput} onChange={(e) => { const v = Math.max(0, Math.min(Number(e.target.value) || 0, processedData.length - 1)); setWaveformStartInput(String(v)); }} onBlur={() => { const v = Math.max(0, Math.min(Number(waveformStartInput) || 0, processedData.length - 1)); setWaveformStart(v); setWaveformStartInput(String(v)); }} onKeyDown={(e) => { if (e.key === "Enter") { const v = Math.max(0, Math.min(Number(waveformStartInput) || 0, processedData.length - 1)); setWaveformStart(v); setWaveformStartInput(String(v)); (e.target as HTMLInputElement).blur(); } }} className="w-16 px-1 py-0.5 rounded border border-hairline bg-background text-foreground text-[9px] text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                     <span className="text-muted-foreground">—</span>
-                    <input type="number" min="1" max={processedData.length} value={waveformEndInput} onChange={(e) => { const v = Math.max(1, Math.min(Number(e.target.value) || 1, processedData.length)); setWaveformEndInput(String(v)); }} onBlur={() => { const v = Math.max(waveformStart + 1, Math.min(Number(waveformEndInput) || 1, processedData.length)); setWaveformEnd(v); setWaveformEndInput(String(v)); }} className="w-16 px-1 py-0.5 rounded border border-hairline bg-background text-foreground text-[9px] text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                    <input type="number" min="1" max={processedData.length} value={waveformEndInput} onChange={(e) => { const v = Math.max(1, Math.min(Number(e.target.value) || 1, processedData.length)); setWaveformEndInput(String(v)); }} onBlur={() => { const v = Math.max(waveformStart + 1, Math.min(Number(waveformEndInput) || 1, processedData.length)); setWaveformEnd(v); setWaveformEndInput(String(v)); }} onKeyDown={(e) => { if (e.key === "Enter") { const v = Math.max(waveformStart + 1, Math.min(Number(waveformEndInput) || 1, processedData.length)); setWaveformEnd(v); setWaveformEndInput(String(v)); (e.target as HTMLInputElement).blur(); } }} className="w-16 px-1 py-0.5 rounded border border-hairline bg-background text-foreground text-[9px] text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                     <span className="text-muted-foreground">of {processedData.length}</span>
                     <button type="button" onClick={() => { setWaveformStart(0); setWaveformStartInput("0"); setWaveformEnd(Math.min(50, processedData.length)); setWaveformEndInput(String(Math.min(50, processedData.length))); }} className="ml-auto px-2 py-0.5 rounded border border-hairline text-foreground/70 hover:bg-foreground/5 transition-colors text-[9px]">Reset</button>
                   </div>
@@ -567,7 +593,7 @@ function AnalyzerDashboard() {
                   <div className="mt-4 flex items-center gap-3 font-mono text-xs">
                     <button type="button" onClick={() => { if (selectedFrameIndex >= waveformData.length - 1) setSelectedFrameIndex(0); setIsPlaying(!isPlaying); }} className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/80 active:bg-foreground/70"><i className={`bi ${isPlaying ? "bi-pause-fill" : "bi-play-fill"} text-lg leading-none`} /></button>
                     <button type="button" onClick={() => { setSelectedFrameIndex(0); setIsPlaying(false); }} className="flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-background transition-colors hover:bg-foreground/8"><i className="bi bi-skip-backward-fill text-muted-foreground leading-none" /></button>
-                    <div className="relative">
+                    <div className="relative" ref={speedDropdownRef}>
                       <button type="button" onClick={() => setIsSpeedDropdownOpen(!isSpeedDropdownOpen)} className="flex h-8 w-16 items-center justify-between rounded-md border border-hairline bg-background px-2 text-[10px] text-muted-foreground outline-none cursor-pointer transition-colors hover:bg-foreground/2"><span>{playbackSpeed.toFixed(2)}x</span><i className={`bi bi-chevron-down text-[8px] transition-transform duration-200 ${isSpeedDropdownOpen ? "rotate-180" : ""}`} /></button>
                       {isSpeedDropdownOpen && (<div className="absolute bottom-full left-0 mb-1 w-16 bg-background border border-hairline rounded-lg z-30 overflow-hidden shadow-none">{speedOptions.map((opt) => (<button key={opt} type="button" onClick={() => { setPlaybackSpeed(opt); setIsSpeedDropdownOpen(false); }} className={`w-full text-left px-2 py-1.5 font-mono text-[10px] transition-colors hover:bg-foreground/4 block ${playbackSpeed === opt ? "bg-foreground/5 font-medium text-foreground" : "text-foreground/70"}`}>{opt.toFixed(2)}x</button>))}</div>)}
                     </div>
