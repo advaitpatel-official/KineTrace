@@ -345,6 +345,30 @@ function AnalyzerDashboard() {
     setIsProcessing(false);
   };
 
+  const generateLocalWindows = useCallback((data: TelemetryFrame[], skipLabelOverride = false) => {
+    const windowSize = 20, localWindows: WindowMetric[] = [];
+    for (let i = 0; i < data.length && localWindows.length < 20; i += windowSize / 2) {
+      const end = Math.min(i + windowSize, data.length);
+      const windowData = data.slice(i, end); if (windowData.length < 5) continue;
+      const mags = windowData.map(f => f.magnitude);
+      const mean = mags.reduce((a, b) => a + b, 0) / mags.length;
+      const std = Math.sqrt(mags.reduce((a, b) => a + (b - mean) ** 2, 0) / mags.length);
+      let jerkSum = 0; for (let j = 1; j < mags.length; j++) jerkSum += Math.abs(mags[j] - mags[j-1]);
+      const meanJerk = (jerkSum / (mags.length - 1)) * 50 * filterModifier.jerkMultiplier;
+      const adjustedStd = std + filterModifier.varianceShift;
+      const csi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk + 20 * Math.max(0.01, adjustedStd)))));
+      let zeroCross = 0; for (let j = 1; j < mags.length; j++) { if ((mags[j-1] < 1 && mags[j] >= 1) || (mags[j-1] >= 1 && mags[j] < 1)) zeroCross++; }
+      const variabilityFactor = Math.min(1.5, Math.max(0.5, 1 + (zeroCross / mags.length - 0.1) * 3));
+      const ksi = Math.max(0, Math.min(100, Math.round(csi / variabilityFactor)));
+      const state: WindowMetric["stabilityState"] = csi > 75 ? "Optimal" : csi > 40 ? "Degraded" : "Critical";
+      let activity: WindowMetric["activity"];
+      if (std < 0.03) activity = "Sitting"; else if (std < 0.06) activity = "Standing"; else if (std > 0.18) activity = "Stairs Up"; else if (std > 0.12) activity = "Stairs Down"; else activity = "Walking";
+      localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
+    }
+    setComputedWindows(localWindows);
+    if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); if (!skipLabelOverride) { setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); } }
+  }, [filterModifier]);
+
   const uploadToMLEngine = useCallback(async (data: TelemetryFrame[]) => {
     if (data.length === 0) return;
     setIsAnalyzing(true); setApiError(null); setPredictionResult(null);
@@ -378,31 +402,7 @@ function AnalyzerDashboard() {
       generateLocalWindows(data);
     }
     finally { setIsAnalyzing(false); }
-  }, []);
-
-  const generateLocalWindows = useCallback((data: TelemetryFrame[], skipLabelOverride = false) => {
-    const windowSize = 20, localWindows: WindowMetric[] = [];
-    for (let i = 0; i < data.length && localWindows.length < 20; i += windowSize / 2) {
-      const end = Math.min(i + windowSize, data.length);
-      const windowData = data.slice(i, end); if (windowData.length < 5) continue;
-      const mags = windowData.map(f => f.magnitude);
-      const mean = mags.reduce((a, b) => a + b, 0) / mags.length;
-      const std = Math.sqrt(mags.reduce((a, b) => a + (b - mean) ** 2, 0) / mags.length);
-      let jerkSum = 0; for (let j = 1; j < mags.length; j++) jerkSum += Math.abs(mags[j] - mags[j-1]);
-      const meanJerk = (jerkSum / (mags.length - 1)) * 50 * filterModifier.jerkMultiplier;
-      const adjustedStd = std + filterModifier.varianceShift;
-      const csi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk + 20 * Math.max(0.01, adjustedStd)))));
-      let zeroCross = 0; for (let j = 1; j < mags.length; j++) { if ((mags[j-1] < 1 && mags[j] >= 1) || (mags[j-1] >= 1 && mags[j] < 1)) zeroCross++; }
-      const variabilityFactor = Math.min(1.5, Math.max(0.5, 1 + (zeroCross / mags.length - 0.1) * 3));
-      const ksi = Math.max(0, Math.min(100, Math.round(csi / variabilityFactor)));
-      const state: WindowMetric["stabilityState"] = csi > 75 ? "Optimal" : csi > 40 ? "Degraded" : "Critical";
-      let activity: WindowMetric["activity"];
-      if (std < 0.03) activity = "Sitting"; else if (std < 0.06) activity = "Standing"; else if (std > 0.18) activity = "Stairs Up"; else if (std > 0.12) activity = "Stairs Down"; else activity = "Walking";
-      localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
-    }
-    setComputedWindows(localWindows);
-    if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); if (!skipLabelOverride) { setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); } }
-  }, [filterModifier]);
+  }, [generateLocalWindows]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

@@ -132,7 +132,7 @@ function Index() {
         <section id="about" className="scroll-mt-24 px-6 pt-28 md:px-12">
           <div className="mx-auto max-w-6xl">
             <h2 className="font-display text-4xl md:text-5xl">What is KineTrace?</h2>
-            <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-foreground/80">
+            <div className="mt-8 max-w-full space-y-4 text-base leading-relaxed text-foreground/80">
               <p>
                 KineTrace is a tool that turns movement data from your phone, smartwatch, or wearable sensor into a simple stability score. Think of it like a fitness tracker, but instead of counting steps, it measures <strong>how steady or unsteady your movement is</strong>.
               </p>

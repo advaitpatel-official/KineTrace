@@ -40,6 +40,17 @@ const homePage: DocPage = {
       ],
     },
     {
+      heading: "How to Get Movement Data (For Normal People)",
+      copy: [
+        "You don't need expensive lab equipment. Any smartphone, smartwatch, or fitness tracker with an accelerometer can record the data KineTrace needs. Here are the easiest ways to get started:",
+        "1. Download a sensor recording app — Apps like 'Physics Toolbox Sensor Suite' (Android/iOS) or 'Sensor Logger' can record accelerometer data and export it as a CSV file. Just place your phone in someone's pocket or hold it against their body while they walk.",
+        "2. Use the built-in example data — The analyzer loads with ~10,500 frames of simulated movement data covering walking, sitting, standing, and stairs. You can explore this immediately without any setup.",
+        "3. Download the template — On the analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV file with the correct column format. Use any phone app that exports sensor data and match the columns.",
+        "4. Get a sample dataset — Click 'Get Sample' on the analyzer page to download a ready-to-use 5-second sample of movement data from the server.",
+        "Your file just needs four columns: timestamp_ms (the time of each reading), ax, ay, az (the acceleration in X, Y, and Z directions). Most sensor apps can export this format directly.",
+      ],
+    },
+    {
       heading: "The Main Number: KSI (KineTrace Stability Index)",
       copy: [
         "KSI is the most important number on the screen. It's a score from 0 to 100 that tells you how stable someone's movement is:",
