@@ -389,7 +389,7 @@ function AnalyzerDashboard() {
       const mean = mags.reduce((a, b) => a + b, 0) / mags.length;
       const std = Math.sqrt(mags.reduce((a, b) => a + (b - mean) ** 2, 0) / mags.length);
       let jerkSum = 0; for (let j = 1; j < mags.length; j++) jerkSum += Math.abs(mags[j] - mags[j-1]);
-      const meanJerk = (jerkSum / (mags.length - 1)) * filterModifier.jerkMultiplier;
+      const meanJerk = (jerkSum / (mags.length - 1)) * 50 * filterModifier.jerkMultiplier;
       const adjustedStd = std + filterModifier.varianceShift;
       const csi = Math.max(0, Math.min(100, Math.round(100 - (50 * meanJerk + 20 * Math.max(0.01, adjustedStd)))));
       let zeroCross = 0; for (let j = 1; j < mags.length; j++) { if ((mags[j-1] < 1 && mags[j] >= 1) || (mags[j-1] >= 1 && mags[j] < 1)) zeroCross++; }

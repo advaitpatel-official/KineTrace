@@ -10,50 +10,50 @@ export const Route = createFileRoute("/")({
 
 const phases = [
   {
-    name: "Signal Ingest",
-    tag: "Phase 01",
-    desc: "Import raw tri-axial accelerometer + gyroscope data via CSV, TXT, or JSON files. The parser auto-detects column headers (ax, ay, az, gx, gy, gz) and timestamps.",
-    meta: ["Source — UCI HAR + MotionSense", "Rate — 50 Hz", "Format — CSV / TXT / JSON"],
+    name: "Load Your Data",
+    tag: "Step 01",
+    desc: "Upload a CSV, TXT, or JSON file from any device that records movement — like a phone, smartwatch, or motion sensor. The system automatically finds the right columns (ax, ay, az, gx, gy, gz).",
+    meta: ["Works with — UCI HAR + MotionSense datasets", "Sample rate — 50 readings per second", "File types — CSV / TXT / JSON"],
   },
   {
-    name: "Magnitude Vectorization",
-    tag: "Phase 02",
-    desc: "Collapse 3D axes into a single orientation-invariant Euclidean norm. This strips device orientation dependencies, making sensor data comparable regardless of how the device is worn.",
-    meta: ["Formula — √(x² + y² + z²)", "Invariance — Device pose independent", "Output — 1D magnitude signal"],
+    name: "Make It Orientation-Free",
+    tag: "Step 02",
+    desc: "Phone in your pocket? Watch on your wrist? Sensor on your waist? We combine the X, Y, and Z axes into one single value using a simple math formula. This removes device orientation so the data is comparable no matter how you wear it.",
+    meta: ["Formula — √(x² + y² + z²)", "Why — orientation doesn't matter anymore", "Result — one clean signal instead of three"],
   },
   {
-    name: "Pagination & Filtering",
-    tag: "Phase 03",
-    desc: "Browse the dataset in pages of configurable size (10–200 rows). Apply an acceleration magnitude threshold to filter out noise below a specified g-force floor.",
-    meta: ["Default — 50 rows/page", "Filter — Cutoff threshold slider", "Navigation — First / Prev / Next / Last"],
+    name: "Browse & Filter Your Data",
+    tag: "Step 03",
+    desc: "Scroll through your data 50 rows at a time. Use the slider to ignore tiny movements below a certain strength — this filters out noise so only meaningful motion is analyzed.",
+    meta: ["Default view — 50 rows per page", "Filter slider — set a minimum g-force", "Navigation — jump to first / previous / next / last page"],
   },
   {
-    name: "Signal Processing",
-    tag: "Phase 04",
-    desc: "Choose from 8 signal processors (Butterworth, Chebyshev, Bessel, Median, Gaussian, Kalman, Savitzky-Golay, Wavelet) that modify how jerk and variance metrics are computed per window.",
-    meta: ["Processors — 8 types", "Jerk scaling — 0.5× to 1.25×", "Variance shift — -0.18 to +0.08"],
+    name: "Choose a Processing Filter",
+    tag: "Step 04",
+    desc: "Pick from 8 different filters that clean up your signal and highlight different types of movement. Each filter changes how we calculate 'jerk' (how suddenly movement changes) and 'variance' (how spread out the movement is).",
+    meta: ["Filters available — 8 types", "Jerk scaling — 0.5× to 1.25×", "Variance shift — -0.18 to +0.08"],
   },
   {
-    name: "KSI Scoring Engine",
-    tag: "Phase 05",
-    desc: "The KineTrace Stability Index (KSI) is computed deterministically per 2.56-second window: KSI = max(0, 100 - (50 × mean_abs_jerk + 20 × std_dev)). Higher scores indicate more stable, fluid movement.",
-    meta: ["Range — 0 (chaotic) to 100 (fluid)", "Weights — 50·Jerk + 20·Std", "States — Optimal / Degraded / Critical"],
+    name: "Get Your Stability Score",
+    tag: "Step 05",
+    desc: "Every 2.56-second chunk of data gets a KSI score from 0 to 100. The formula is: KSI = max(0, 100 - (50 × average jerk + 20 × standard deviation)). A high score means smooth, stable movement. A low score means shaky or chaotic movement.",
+    meta: ["Score range — 0 (very unsteady) to 100 (very steady)", "Formula weighs — jerk (suddenness) and std (spread)", "Results labeled — Optimal / Degraded / Critical"],
   },
   {
-    name: "Analytics & Export",
-    tag: "Phase 06",
-    desc: "The analyzer provides three views: the raw telemetry log table, windowed analytics with per-window KSI/jerk/variance breakdown, and a summary dashboard with aggregate stats. Export waveforms as PNG/SVG, data as JSON/CSV, or reports as plain text.",
-    meta: ["Export — PNG / SVG / JSON / CSV / TXT", "Views — Log / Analytics / Summary", "Visualizations — Waveform, 3D Mesh, Histogram, FFT"],
+    name: "Explore & Export Results",
+    tag: "Step 06",
+    desc: "View your data three ways: (1) the raw numbers table, (2) a breakdown window-by-window with KSI scores, jerk, and variance, and (3) a summary dashboard with overall stats. Export charts as images, data as JSON/CSV, or a full report as a text file.",
+    meta: ["Export — PNG / SVG / JSON / CSV / TXT", "Views — Raw log / Per-window analytics / Summary", "Visuals — Waveform graph, 3D orientation cube, histogram, frequency spectrum"],
   },
 ];
 
 const capabilities = [
-  { n: "01", title: "Orientation invariance", body: "The Euclidean magnitude transform strips device orientation dependencies. A phone in your pocket, a watch on your wrist, or a sensor on your waist all produce comparable signals." },
-  { n: "02", title: "Real-time pagination", body: "Browse datasets of 10,000+ rows without performance degradation. The pagination system loads 50 rows at a time with configurable page size and first/prev/next/last navigation." },
-  { n: "03", title: "Clinical KSI with 3-state classification", body: "Each analysis window receives a KSI score (0–100) and a stability classification: Optimal (>75), Degraded (40–75), or Critical (<40). Color-coded badges make interpretation instant." },
-  { n: "04", title: "8 signal processors", body: "Choose from Butterworth lowpass, Chebyshev highpass, Bessel bandpass, Median filter, Gaussian smooth, Kalman filter, Savitzky-Golay, and Wavelet denoise — each with a unique effect on jerk/variance computations." },
-  { n: "05", title: "Interactive visualizations", body: "Explore your data through a live waveform canvas with scrubber, a 3D orientation mesh cube driven by pitch/roll/yaw, a magnitude histogram, and an FFT frequency spectrum — all toggleable." },
-  { n: "06", title: "Multi-format export", body: "Export the waveform graph as PNG or SVG, download the raw dataset as JSON, generate a data collection template CSV, or output a full analytics report as plain text." },
+  { n: "01", title: "Works with any device orientation", body: "Whether your sensor is in a pocket, on a wrist, or clipped to a belt, the math strips away orientation differences. All movement data becomes comparable." },
+  { n: "02", title: "Fast browsing for large datasets", body: "Scroll through 10,000+ rows of data smoothly. The system only loads 50 rows at a time, with easy navigation to jump anywhere." },
+  { n: "03", title: "A stability score you can understand", body: "Each chunk of movement gets a single number from 0–100 and a color-coded label: Optimal (green), Degraded (yellow), or Critical (red). No complex charts to decode." },
+  { n: "04", title: "8 ways to clean up your signal", body: "Different filters highlight different types of movement. Butterworth smooths noise. Kalman adapts to changing conditions. Wavelet removes multi-layered interference. Pick what works for your data." },
+  { n: "05", title: "See your movement from every angle", body: "Watch the live waveform as it plays back. See a 3D cube rotate based on your sensor's pitch and roll. View histograms and frequency spectrums — all toggleable on and off." },
+  { n: "06", title: "Save and share your work", body: "Export the waveform as an image (PNG or SVG), download your full dataset as JSON, get a template for collecting new data, or generate a plain-text analytics report." },
 ];
 
 const demoOutput = {
@@ -101,7 +101,7 @@ function Index() {
               KineTrace<span className="align-super text-lg not-italic">®</span>
             </h1>
             <p className="mt-4 max-w-2xl mx-auto text-base leading-relaxed text-foreground/70 md:text-lg">
-              Quantifying human movement stability from ordinary wearable sensors
+              Turn your phone or wearable into a movement stability tester. Upload sensor data, get a simple score.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -131,7 +131,7 @@ function Index() {
 
         <section id="method" className="scroll-mt-24 pt-28">
           <div className="mx-auto max-w-6xl px-6 md:px-12">
-            <h2 className="font-display text-4xl md:text-5xl">How It Works</h2>
+            <h2 className="font-display text-4xl md:text-5xl">How It Works — Step by Step</h2>
           </div>
           <div className="mt-10 hairline-t hairline-b">
             {phases.map((p) => (
@@ -171,7 +171,7 @@ function Index() {
         <section className="px-6 pt-28 md:px-12">
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-12">
             <div className="md:col-span-4">
-              <h2 className="font-display text-4xl md:text-5xl">Capabilities</h2>
+              <h2 className="font-display text-4xl md:text-5xl">What It Can Do</h2>
             </div>
             <div className="md:col-span-8 divide-y divide-hairline hairline-t hairline-b">
               {capabilities.map((c) => (
@@ -188,11 +188,11 @@ function Index() {
         <section className="px-6 pt-32 md:px-12">
           <div className="mx-auto max-w-6xl grid grid-cols-1 gap-10 md:grid-cols-12">
             <blockquote className="md:col-span-8 font-display text-3xl leading-[1.15] md:text-4xl">
-              “Stripping the axes and scoring the jerk turned messy phone data
-              into a single number a clinician can actually reason about.”
+              “We wanted a way to turn raw phone sensor data into something a doctor could actually use.
+              KSI is that number — one score that tells you if movement is steady or not.”
             </blockquote>
             <div className="md:col-span-4 self-end font-mono text-xs text-muted-foreground">
-              Design note — KineTrace research log
+              KineTrace research notes
             </div>
           </div>
         </section>
@@ -200,25 +200,23 @@ function Index() {
         <section id="ksi" className="scroll-mt-24 px-6 pt-32 pb-12 md:px-12 md:pb-16">
           <div className="mx-auto max-w-6xl">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="font-display text-4xl md:text-5xl">Try the KSI</h2>
+              <h2 className="font-display text-4xl md:text-5xl">Try It Now</h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Live Prototype Available
+                The Analyzer is Live
               </span>
             </div>
             <p className="mt-4 max-w-2xl text-foreground/75">
-              The public analyzer workspace is live. Upload a short accelerometer + gyroscope
-              capture log to receive instant activity classifications, telemetry breakdowns,
-              and full KineTrace Stability Index metrics.
+              No setup needed. Open the analyzer, upload a short movement recording from your phone or wearable, and get an instant stability score, activity classification, and full breakdown of your data.
             </p>
 
             <div className="mt-10 glass rounded-3xl p-6 md:p-10">
               <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
                 <div className="md:col-span-7">
                   <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Interactive Workspace Node
+                    A Live Example
                   </div>
                   <h3 className="mt-3 font-display text-3xl md:text-4xl">
-                    Drop a sensor capture, receive a score.
+                    Upload movement data, get a stability score back.
                   </h3>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     <Link
@@ -226,7 +224,7 @@ function Index() {
                       className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-transform hover:-translate-y-0.5"
                     >
                       <i className="bi bi-box-arrow-up-right" aria-hidden />
-                      Launch the analyzer
+                      Open the analyzer
                     </Link>
                   </div>
                 </div>
@@ -245,11 +243,11 @@ function Index() {
                     {}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-lg border border-hairline p-3 font-mono bg-background/20">
-                        <div className="text-[9px] text-muted-foreground uppercase tracking-wider">KSI Score</div>
+                        <div className="text-[9px] text-muted-foreground uppercase tracking-wider">Stability Score</div>
                         <div className="mt-1 font-display text-3xl tabular-nums" style={{ color: "var(--color-foreground)" }}>{demoOutput.ksi}</div>
                       </div>
                       <div className="rounded-lg border border-hairline p-3 font-mono bg-background/20">
-                        <div className="text-[9px] text-muted-foreground uppercase tracking-wider">State</div>
+                        <div className="text-[9px] text-muted-foreground uppercase tracking-wider">Status</div>
                         <div className="mt-1">
                           <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-500">{demoOutput.state}</span>
                         </div>
@@ -259,11 +257,11 @@ function Index() {
                     {}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                        <span>Jerk</span>
+                        <span>Jerk (suddenness)</span>
                         <span className="text-foreground/80 font-medium">{demoOutput.jerk.toFixed(2)} m/s³</span>
                       </div>
                       <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                        <span>Variance</span>
+                        <span>Variance (spread)</span>
                         <span className="text-foreground/80 font-medium">{demoOutput.variance.toFixed(3)}</span>
                       </div>
                     </div>
@@ -280,9 +278,9 @@ function Index() {
                         />
                       </div>
                       <div className="mt-1 flex justify-between font-mono text-[9px] text-muted-foreground">
-                        <span>chaotic 0</span>
+                        <span>very unsteady 0</span>
                         <span className="text-foreground/80">{demoOutput.ksi} KSI</span>
-                        <span>100 fluid</span>
+                        <span>100 very steady</span>
                       </div>
                     </div>
 
@@ -302,8 +300,7 @@ function Index() {
         <section id="contact" className="scroll-mt-24 px-6 pt-12 pb-16 md:px-12">
           <div className="mx-auto max-w-6xl">
             <p className="max-w-xl text-foreground/75">
-              If you're a clinical researcher, biomechanics lab, or wearable
-              team who wants early access to the KSI analyzer, drop a line.
+              Are you a researcher, clinician, or someone working with movement data? If you'd like early access, have questions, or want to collaborate, reach out.
             </p>
 
             <div className="mt-16 hairline-t">
