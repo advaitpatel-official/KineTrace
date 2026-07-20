@@ -349,26 +349,34 @@ function AnalyzerDashboard() {
     if (data.length === 0) return;
     setIsAnalyzing(true); setApiError(null); setPredictionResult(null);
     try {
-      // Downsample to max 500 frames to avoid timeout on free tier
+      // Use evenly spaced sample of data (respects the signal shape)
       const sample = data.length > 500
-        ? data.filter((_, i) => i % Math.ceil(data.length / 500) === 0).slice(0, 500)
+        ? data.filter((_, i) => i % Math.max(1, Math.floor(data.length / 500)) === 0).slice(0, 500)
         : data;
-      const headers = "timestamp_ms,ax,ay,az,gx,gy,gz,magnitude";
-      const rows = sample.map(obj => `${obj.timestamp_ms},${obj.ax.toFixed(4)},${obj.ay.toFixed(4)},${obj.az.toFixed(4)},${obj.gx.toFixed(4)},${obj.gy.toFixed(4)},${obj.gz.toFixed(4)},${obj.magnitude.toFixed(4)}`).join("\n");
+      // Only send raw sensor columns - don't include magnitude as it's not in the backend schema
+      const headers = "timestamp_ms,ax,ay,az,gx,gy,gz";
+      const rows = sample.map(obj => `${obj.timestamp_ms},${obj.ax.toFixed(6)},${obj.ay.toFixed(6)},${obj.az.toFixed(6)},${obj.gx.toFixed(6)},${obj.gy.toFixed(6)},${obj.gz.toFixed(6)}`).join("\n");
       const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
       const formData = new FormData(); formData.append('file', blob, 'kinetrace_workspace_matrix.csv');
       const response = await fetch("https://kinetrace.onrender.com/api/ingest", { method: "POST", body: formData, signal: AbortSignal.timeout(25000) });
       if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.detail || "ML Engine rejected the data."); }
       const result = await response.json();
-        if (result.status === "success") {
+      if (result.status === "success" && result.mean_kinetic_stability_index > 0) {
         const rawKsi = result.mean_kinetic_stability_index;
         setPredictionResult(`TUG: ${result.estimated_clinical_tug_score.toFixed(2)}s | KSI: ${rawKsi.toFixed(1)}`);
         setRealCsi(rawKsi); setRealKsi(Math.round(rawKsi));
         setRealPredictedActivity(result.predicted_activity || "");
-        // Still compute windows locally for display but don't overwrite the backend prediction text
+        // Still compute windows locally for display
         generateLocalWindows(data, true);
-      } else { setApiError(result.message || "Pipeline uncalibrated."); }
-    } catch (err) { console.error("ML Engine Error:", err); generateLocalWindows(data); setApiError(null); }
+      } else {
+        // Backend returned 0 KSI (models not loaded) - fall back to local computation
+        throw new Error("Backend KSI is 0, using local computation");
+      }
+    } catch (err) {
+      console.error("ML Engine Error:", err);
+      // Always fall back to local computation which uses all data (not downsampled)
+      generateLocalWindows(data);
+    }
     finally { setIsAnalyzing(false); }
   }, []);
 
@@ -467,7 +475,6 @@ function AnalyzerDashboard() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 font-mono text-[9px] text-muted-foreground">
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${mlWaking ? "bg-yellow-500 animate-pulse" : mlOnline ? "bg-emerald-500" : "bg-red-500"}`} /><span>{mlWaking ? "Waking ML..." : mlOnline ? "ML Engine" : "ML Offline (local)"}</span>
-            {predictionResult && <span className="text-foreground/60 ml-1 hidden sm:inline">{predictionResult}</span>}
           </div>
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Workspace</div>
         </div>
