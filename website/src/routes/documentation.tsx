@@ -40,41 +40,6 @@ const homePage: DocPage = {
       ],
     },
     {
-      heading: "How to Get Movement Data (For Normal People)",
-      copy: [
-        "You don't need expensive lab equipment. Any smartphone, smartwatch, or fitness tracker with an accelerometer can record the data KineTrace needs. Here are the easiest ways to get started:",
-        "1. Download a sensor recording app — Apps like 'Physics Toolbox Sensor Suite' (Android/iOS) or 'Sensor Logger' can record accelerometer data and export it as a CSV file. Just place your phone in someone's pocket or hold it against their body while they walk.",
-        "2. Use the built-in example data — The analyzer loads with ~10,500 frames of simulated movement data covering walking, sitting, standing, and stairs. You can explore this immediately without any setup.",
-        "3. Download the template — On the analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV file with the correct column format. Use any phone app that exports sensor data and match the columns.",
-        "4. Get a sample dataset — Click 'Get Sample' on the analyzer page to download a ready-to-use 5-second sample of movement data from the server.",
-        "Your file just needs four columns: timestamp_ms (the time of each reading), ax, ay, az (the acceleration in X, Y, and Z directions). Most sensor apps can export this format directly.",
-      ],
-    },
-    {
-      heading: "How the Upload System Works — Merging, Clearing, and the Factory Reset",
-      copy: [
-        "KineTrace has a simple but important system for managing your data. Here's how it works:",
-        "Built-in example data — When you first open the analyzer, it loads with ~10,500 frames of simulated movement data (walking, sitting, standing, stairs up, stairs down). This is called the 'factory dataset.' You can explore it immediately without uploading anything.",
-        "Uploading adds to existing data — When you upload a file, the new data is appended to whatever is already in the workspace. It does NOT replace the existing data. If the factory dataset is loaded and you upload a file, you'll have both the factory data AND your data combined. This allows you to layer multiple recordings together.",
-        "The workflow — Starting from an empty workspace: Upload File A → workspace has File A. Upload File B → workspace has File A + File B combined. Upload File C → workspace has File A + File B + File C. Data keeps accumulating until you clear it.",
-        "Clear removes everything — The red 'Clear' button in the top toolbar wipes ALL data from the workspace, including the factory dataset. The workspace becomes completely empty, and you'll see the empty state screen. After clearing, your next upload will be the only data in the workspace.",
-        "Factory Reset restores the defaults — The 'Factory Reset' button brings back the original factory dataset (~10,500 frames of simulated data). It discards any imported files you've added. Use this when you want to start fresh with the built-in example data.",
-        "When to use each option — Use 'Clear' when you want a completely empty workspace to start fresh with your own data (no factory data mixed in). Use 'Factory Reset' when you want to go back to the original example data. Don't use either if you want to keep adding files — just upload and they'll merge automatically.",
-      ],
-    },
-    {
-      heading: "Real-World Uses for KineTrace",
-      copy: [
-        "KineTrace can be used in many practical ways to measure and monitor movement stability. Here are some examples:",
-        "Fall risk screening for older adults — Record a short walk with a phone in someone's pocket. KineTrace produces a KSI score that indicates their current stability level. A low KSI (below 40) suggests significant instability and high fall risk. This can be done as a quick, non-invasive screening that doesn't require a doctor's visit.",
-        "Tracking recovery after injury or surgery — Record movement data each week during recovery from a leg injury, hip replacement, or stroke. Upload each session separately (without clearing) to build a timeline. Monitor whether the KSI score trends upward (improving stability) or stays flat (recovery plateau).",
-        "Comparing different conditions — Record the same person walking on different surfaces (carpet vs. tile), with different shoes, or at different times of day. Upload each recording separately and compare the KSI scores. The score will be lower on unstable surfaces or when the person is tired.",
-        "Monitoring medication effects — For conditions that affect movement (Parkinson's, multiple sclerosis, vertigo), record movement data before and after medication. Compare the KSI scores to measure whether the medication improves movement stability. A rising KSI score indicates the treatment is working.",
-        "Athletic training and form analysis — Record an athlete performing exercises (squats, lunges, balance drills). Low variance and consistent jerk patterns (high KSI) indicate good form and control. Increasing KSI over weeks of training shows improved stability and neuromuscular control.",
-        "The key advantage is that KineTrace works with any phone or wearable — no special equipment needed. You can record data anywhere: at home, in a clinic, at a gym, or outdoors. The score gives you an objective, repeatable measurement that's much more sensitive than watching someone move with your eyes.",
-      ],
-    },
-    {
       heading: "The Main Number: KSI (KineTrace Stability Index)",
       copy: [
         "KSI is the most important number on the screen. It's a score from 0 to 100 that tells you how stable someone's movement is:",
@@ -149,6 +114,128 @@ const docGroups: DocGroup[] = [
               "Your data is divided into pages. 50 rows are shown by default, but you can change this using the slider (from 10 to 200 rows at a time).",
               "Use the navigation buttons to move around: First page (««), Previous page (‹), Next page (›), Last page (»»). The current page number is shown in the middle.",
               "Note: Changing the page size or applying a filter will reset you back to page 1.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "getting-data",
+        title: "Getting Movement Data",
+        eyebrow: "Loading Data",
+        summary: "How to capture or source movement data for use with KineTrace. You can use any phone or wearable.",
+        icon: "bi-phone",
+        body: [
+          {
+            heading: "How to Capture Movement Data",
+            copy: [
+              "You don't need expensive lab equipment. Any smartphone, smartwatch, or fitness tracker with an accelerometer can record the data KineTrace needs.",
+              "The easiest way is to download a sensor recording app on your phone. Apps like 'Physics Toolbox Sensor Suite' (Android and iOS) or 'Sensor Logger' can record accelerometer data and export it as a CSV file. Just place the phone in someone's pocket or hold it against their body while they walk, stand, or move.",
+              "Your file needs at least three columns: ax, ay, az (the acceleration in the X, Y, and Z directions). A timestamp_ms column (the time of each reading) is optional but helpful. Most sensor apps can export this format directly.",
+            ],
+          },
+          {
+            heading: "Use the Built-In Example Data",
+            copy: [
+              "The analyzer loads with ~10,500 frames of simulated movement data covering walking, sitting, standing, and stairs. You can explore this immediately without any setup. It's a great way to learn how KineTrace works before capturing your own data.",
+            ],
+          },
+          {
+            heading: "Download the Template or Sample",
+            copy: [
+              "On the analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV file with the correct column headers and example rows. Use this to format your own data correctly.",
+              "Click 'Get Sample' to download a ready-to-use 5-second sample of movement data from the server for testing.",
+            ],
+          },
+          {
+            heading: "Accepted File Formats",
+            copy: [
+              "KineTrace accepts CSV, TXT, and JSON files. The system automatically finds the right columns in your file, regardless of the order they appear. Required columns are ax, ay, az. Optional columns include timestamp_ms, gx, gy, gz, and magnitude.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "upload-system",
+        title: "How Uploading Works",
+        eyebrow: "Loading Data",
+        summary: "Understand how data accumulates, when to clear the workspace, and how the factory reset works.",
+        icon: "bi-arrow-repeat",
+        body: [
+          {
+            heading: "Uploading Adds to Existing Data",
+            copy: [
+              "When you upload a file, the new data is appended to whatever is already in the workspace. It does NOT replace the existing data. If the factory dataset is loaded and you upload a file, you'll have both the factory data AND your data combined.",
+              "This allows you to layer multiple recordings together. For example: Upload File A → workspace has File A. Upload File B → workspace has File A + File B combined. Upload File C → workspace has File A + File B + File C. Data keeps accumulating until you clear it.",
+            ],
+          },
+          {
+            heading: "Clear Removes Everything",
+            copy: [
+              "The red 'Clear' button in the top toolbar wipes ALL data from the workspace, including the factory dataset. The workspace becomes completely empty and you'll see the empty state screen. After clearing, your next upload will be the only data in the workspace. This is useful when you want to start completely fresh with only your own data.",
+            ],
+          },
+          {
+            heading: "Factory Reset Restores the Defaults",
+            copy: [
+              "The 'Factory Reset' button brings back the original factory dataset (~10,500 frames of simulated movement data covering walking, sitting, standing, stairs up, and stairs down). It discards any imported files you've added. Use this when you want to go back to the built-in example data to demonstrate the tool or start a fresh exploration.",
+            ],
+          },
+          {
+            heading: "When to Use Each Option",
+            copy: [
+              "Use 'Clear' when you want a completely empty workspace to start fresh with your own data (no factory data mixed in). Use 'Factory Reset' when you want to go back to the original example data. Don't use either if you want to keep adding files — just upload and they'll merge automatically.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "usecases",
+    title: "Use Cases",
+    icon: "bi-compass",
+    pages: [
+      {
+        id: "real-world-uses",
+        title: "Real-World Uses",
+        eyebrow: "Use Cases",
+        summary: "Practical ways to use KineTrace for fall risk screening, recovery tracking, medication monitoring, and more.",
+        icon: "bi-globe",
+        body: [
+          {
+            heading: "Fall Risk Screening for Older Adults",
+            copy: [
+              "Record a short walk with a phone in someone's pocket. KineTrace produces a KSI score that indicates their current stability level. A low KSI (below 40) suggests significant instability and high fall risk. This can be done as a quick, non-invasive screening that doesn't require a doctor's visit. Repeat monthly to track changes over time.",
+            ],
+          },
+          {
+            heading: "Tracking Recovery After Injury or Surgery",
+            copy: [
+              "Record movement data each week during recovery from a leg injury, hip replacement, or stroke. Upload each session separately (without clearing) to build a timeline. Monitor whether the KSI score trends upward (improving stability) or stays flat (recovery plateau). A rising KSI means the rehabilitation is working.",
+            ],
+          },
+          {
+            heading: "Comparing Different Conditions",
+            copy: [
+              "Record the same person walking on different surfaces (carpet vs. tile), with different shoes, or at different times of day. Upload each recording separately and compare the KSI scores. The score will be lower on unstable surfaces or when the person is tired. This helps identify specific situations that increase fall risk.",
+            ],
+          },
+          {
+            heading: "Monitoring Medication Effects",
+            copy: [
+              "For conditions that affect movement (Parkinson's, multiple sclerosis, vertigo), record movement data before and after medication. Compare the KSI scores to measure whether the medication improves movement stability. A rising KSI score indicates the treatment is working. This provides objective data to share with doctors.",
+            ],
+          },
+          {
+            heading: "Athletic Training and Form Analysis",
+            copy: [
+              "Record an athlete performing exercises (squats, lunges, balance drills). Low variance and consistent jerk patterns (high KSI) indicate good form and control. Increasing KSI over weeks of training shows improved stability and neuromuscular control. This can help coaches identify form issues before they lead to injury.",
+            ],
+          },
+          {
+            heading: "Why KineTrace Is Useful for These Scenarios",
+            copy: [
+              "The key advantage is that KineTrace works with any phone or wearable — no special equipment needed. You can record data anywhere: at home, in a clinic, at a gym, or outdoors. The score gives you an objective, repeatable measurement that's much more sensitive than watching someone move with your eyes. Subtle changes in stability that would be invisible to a human observer show up clearly in the KSI score.",
             ],
           },
         ],
@@ -644,7 +731,7 @@ function Documentation() {
   const [activeId, setActiveId] = useState(homePage.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    importing: true, processing: true, analyzer: true, exporting: true, tabs: true, backend: true, devlog: true
+    importing: true, usecases: true, processing: true, analyzer: true, exporting: true, tabs: true, backend: true, devlog: true
   });
   const isMobile = useIsMobile();
 
