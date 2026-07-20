@@ -129,26 +129,22 @@ function Index() {
           </div>
         </section>
 
-        <section className="px-6 pt-28 md:px-12">
+        <section id="about" className="scroll-mt-24 px-6 pt-28 md:px-12">
           <div className="mx-auto max-w-6xl">
-            <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
-              <div className="md:col-span-5">
-                <h2 className="font-display text-4xl md:text-5xl">What is KineTrace?</h2>
-              </div>
-              <div className="md:col-span-7 space-y-4 text-base leading-relaxed text-foreground/80">
-                <p>
-                  KineTrace is a tool that turns movement data from your phone, smartwatch, or wearable sensor into a simple stability score. Think of it like a fitness tracker, but instead of counting steps, it measures <strong>how steady or unsteady your movement is</strong>.
-                </p>
-                <p>
-                  You upload a recording of someone walking, standing, or moving — captured by any device with an accelerometer — and KineTrace analyzes the tiny details in their movement that are invisible to the human eye. It measures things like <strong>how suddenly they jerk</strong> (jerk) and <strong>how much their movement varies</strong> (variance).
-                </p>
-                <p>
-                  The result is a single score from 0 to 100. A high score means smooth, controlled movement. A low score means shaky or unstable movement that could signal a fall risk. <strong>Researchers and clinicians</strong> use this to detect instability early — before someone actually falls.
-                </p>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground pt-2">
-                  Built on UCI HAR + MotionSense datasets · Research prototype
-                </p>
-              </div>
+            <h2 className="font-display text-4xl md:text-5xl">What is KineTrace?</h2>
+            <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-foreground/80">
+              <p>
+                KineTrace is a tool that turns movement data from your phone, smartwatch, or wearable sensor into a simple stability score. Think of it like a fitness tracker, but instead of counting steps, it measures <strong>how steady or unsteady your movement is</strong>.
+              </p>
+              <p>
+                You upload a recording of someone walking, standing, or moving — captured by any device with an accelerometer — and KineTrace analyzes the tiny details in their movement that are invisible to the human eye. It measures things like <strong>how suddenly they jerk</strong> (jerk) and <strong>how much their movement varies</strong> (variance).
+              </p>
+              <p>
+                The result is a single score from 0 to 100. A high score means smooth, controlled movement. A low score means shaky or unstable movement that could signal a fall risk. <strong>Researchers and clinicians</strong> use this to detect instability early — before someone actually falls.
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground pt-2">
+                Built on UCI HAR + MotionSense datasets · Research prototype
+              </p>
             </div>
           </div>
         </section>
