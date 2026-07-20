@@ -51,6 +51,30 @@ const homePage: DocPage = {
       ],
     },
     {
+      heading: "How the Upload System Works — Merging, Clearing, and the Factory Reset",
+      copy: [
+        "KineTrace has a simple but important system for managing your data. Here's how it works:",
+        "Built-in example data — When you first open the analyzer, it loads with ~10,500 frames of simulated movement data (walking, sitting, standing, stairs up, stairs down). This is called the 'factory dataset.' You can explore it immediately without uploading anything.",
+        "Uploading adds to existing data — When you upload a file, the new data is appended to whatever is already in the workspace. It does NOT replace the existing data. If the factory dataset is loaded and you upload a file, you'll have both the factory data AND your data combined. This allows you to layer multiple recordings together.",
+        "The workflow — Starting from an empty workspace: Upload File A → workspace has File A. Upload File B → workspace has File A + File B combined. Upload File C → workspace has File A + File B + File C. Data keeps accumulating until you clear it.",
+        "Clear removes everything — The red 'Clear' button in the top toolbar wipes ALL data from the workspace, including the factory dataset. The workspace becomes completely empty, and you'll see the empty state screen. After clearing, your next upload will be the only data in the workspace.",
+        "Factory Reset restores the defaults — The 'Factory Reset' button brings back the original factory dataset (~10,500 frames of simulated data). It discards any imported files you've added. Use this when you want to start fresh with the built-in example data.",
+        "When to use each option — Use 'Clear' when you want a completely empty workspace to start fresh with your own data (no factory data mixed in). Use 'Factory Reset' when you want to go back to the original example data. Don't use either if you want to keep adding files — just upload and they'll merge automatically.",
+      ],
+    },
+    {
+      heading: "Real-World Uses for KineTrace",
+      copy: [
+        "KineTrace can be used in many practical ways to measure and monitor movement stability. Here are some examples:",
+        "Fall risk screening for older adults — Record a short walk with a phone in someone's pocket. KineTrace produces a KSI score that indicates their current stability level. A low KSI (below 40) suggests significant instability and high fall risk. This can be done as a quick, non-invasive screening that doesn't require a doctor's visit.",
+        "Tracking recovery after injury or surgery — Record movement data each week during recovery from a leg injury, hip replacement, or stroke. Upload each session separately (without clearing) to build a timeline. Monitor whether the KSI score trends upward (improving stability) or stays flat (recovery plateau).",
+        "Comparing different conditions — Record the same person walking on different surfaces (carpet vs. tile), with different shoes, or at different times of day. Upload each recording separately and compare the KSI scores. The score will be lower on unstable surfaces or when the person is tired.",
+        "Monitoring medication effects — For conditions that affect movement (Parkinson's, multiple sclerosis, vertigo), record movement data before and after medication. Compare the KSI scores to measure whether the medication improves movement stability. A rising KSI score indicates the treatment is working.",
+        "Athletic training and form analysis — Record an athlete performing exercises (squats, lunges, balance drills). Low variance and consistent jerk patterns (high KSI) indicate good form and control. Increasing KSI over weeks of training shows improved stability and neuromuscular control.",
+        "The key advantage is that KineTrace works with any phone or wearable — no special equipment needed. You can record data anywhere: at home, in a clinic, at a gym, or outdoors. The score gives you an objective, repeatable measurement that's much more sensitive than watching someone move with your eyes.",
+      ],
+    },
+    {
       heading: "The Main Number: KSI (KineTrace Stability Index)",
       copy: [
         "KSI is the most important number on the screen. It's a score from 0 to 100 that tells you how stable someone's movement is:",
