@@ -24,7 +24,7 @@ const phases = [
   {
     name: "Browse & Filter Your Data",
     tag: "Step 03",
-    desc: "Scroll through your data 50 rows at a time. Use the slider to ignore tiny movements below a certain strength — this filters out noise so only meaningful motion is analyzed.",
+    desc: "Scroll through your data up to 200 rows at a time. Use the slider to ignore tiny movements below a certain strength — this filters out noise so only meaningful motion is analyzed.",
     meta: ["Default view — 50 rows per page", "Filter slider — set a minimum g-force", "Navigation — jump to first / previous / next / last page"],
   },
   {
@@ -43,7 +43,7 @@ const phases = [
     name: "Explore & Export Results",
     tag: "Step 06",
     desc: "View your data three ways: (1) the raw numbers table, (2) a breakdown window-by-window with KSI scores, jerk, and variance, and (3) a summary dashboard with overall stats. Export charts as images, data as JSON/CSV, or a full report as a text file.",
-    meta: ["Export — PNG / SVG / JSON / CSV / TXT", "Views — Raw log / Per-window analytics / Summary", "Visuals — Waveform graph, 3D orientation cube, histogram, frequency spectrum"],
+    meta: ["Export — PNG / JSON / CSV / TXT", "Views — Raw log / Per-window analytics / Summary", "Visuals — Waveform graph, orientation mesh, histogram, frequency spectrum"],
   },
 ];
 
@@ -140,7 +140,10 @@ function Index() {
                 You upload a recording of someone walking, standing, or moving — captured by any device with an accelerometer — and KineTrace analyzes the tiny details in their movement that are invisible to the human eye. It measures things like <strong>how suddenly they jerk</strong> (jerk) and <strong>how much their movement varies</strong> (variance).
               </p>
               <p>
-                The result is a single score from 0 to 100. A high score means smooth, controlled movement. A low score means shaky or unstable movement that could signal a fall risk. <strong>Researchers and clinicians</strong> use this to detect instability early — before someone actually falls.
+                The result is a single score from 0 to 100. A high score means smooth, controlled movement. A low score means shaky or unstable movement that could signal a fall risk. <strong>Researchers and clinicians</strong> can use this to detect instability early — before someone actually falls.
+              </p>
+              <p>
+                <strong>It is important to note that kinetrace is a research prototype and should not be used to self diagnose, not only does this tool not have the capability to replace professional medical evaluation, it is not designed for that purpose either. At most, this tool should be used to give yourself an idea of whether you should consult a professional or not.</strong>
               </p>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground pt-2">
                 Built on UCI HAR + MotionSense datasets · Research prototype
@@ -320,7 +323,7 @@ function Index() {
         <section id="contact" className="scroll-mt-24 px-6 pt-12 pb-16 md:px-12">
           <div className="mx-auto max-w-6xl">
             <p className="max-w-xl text-foreground/75">
-              Are you a researcher, clinician, or someone working with movement data? If you'd like early access, have questions, or want to collaborate, reach out.
+              Are you a researcher, clinician, or someone working with movement data? If you have questions or want to collaborate, please reach out, I would be happy and grateful to help.
             </p>
 
             <div className="mt-16 hairline-t">

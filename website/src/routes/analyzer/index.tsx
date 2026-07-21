@@ -66,7 +66,7 @@ function AnalyzerDashboard() {
   const [realPredictedActivity, setRealPredictedActivity] = useState<string>("");
 
   const [dismissedMlWarning, setDismissedMlWarning] = useState(false);
-  const [showMlWarning, setShowMlWarning] = useState(false);
+  const [mlWarningType, setMlWarningType] = useState<"waking" | "offline" | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isSpeedDropdownOpen, setIsSpeedDropdownOpen] = useState(false);
@@ -141,15 +141,19 @@ function AnalyzerDashboard() {
     if (rowLimit > maxAvailableRows) setRowLimit(maxAvailableRows);
   }, [maxAvailableRows, rowLimit]);
 
-  // Debounced ML warning: only show if mlWaking has been true for 2s straight
+  // ML status banner: show when waking (yellow) or offline (red), debounce hide to prevent flicker
   useEffect(() => {
-    if (!mlWaking) {
-      setShowMlWarning(false);
+    if (mlWaking) {
+      setMlWarningType("waking");
       return;
     }
-    const timer = setTimeout(() => setShowMlWarning(true), 2000);
+    if (!mlOnline) {
+      setMlWarningType("offline");
+      return;
+    }
+    const timer = setTimeout(() => setMlWarningType(null), 5000);
     return () => clearTimeout(timer);
-  }, [mlWaking]);
+  }, [mlWaking, mlOnline]);
 
   // Warm up the free-tier Render backend on page load + periodic health checks
   useEffect(() => {
@@ -505,17 +509,29 @@ function AnalyzerDashboard() {
         </div>
       )}
 
-      {showMlWarning && !dismissedMlWarning && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 font-mono text-[11px] text-red-600 backdrop-blur-md dark:text-red-400">
-          <i className="bi bi-exclamation-triangle-fill shrink-0 text-sm" aria-hidden />
+      {mlWarningType && !dismissedMlWarning && (
+        <div className={`flex items-center gap-3 border-b px-4 py-2.5 font-mono text-[11px] backdrop-blur-md ${
+          mlWarningType === "waking"
+            ? "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300"
+            : "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400"
+        }`}>
+          <i className={`bi ${
+            mlWarningType === "waking" ? "bi-clock" : "bi-exclamation-triangle-fill"
+          } shrink-0 text-sm`} aria-hidden />
           <span className="flex-1">
-            The ML engine is still waking up. Data will not be available for a few moments.
+            {mlWarningType === "waking"
+              ? "The ML engine is still waking up. Data will not be available for a few moments."
+              : "The ML engine is currently offline. Results will be computed locally."}
           </span>
           <button
             type="button"
             onClick={() => setDismissedMlWarning(true)}
             aria-label="Dismiss warning"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-red-500/60 transition-colors hover:bg-red-500/10 hover:text-red-500"
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-foreground/10 ${
+              mlWarningType === "waking"
+                ? "text-yellow-600/60 hover:text-yellow-600 dark:text-yellow-300/60 dark:hover:text-yellow-300"
+                : "text-red-500/60 hover:text-red-500 dark:text-red-400/60 dark:hover:text-red-400"
+            }`}
           >
             <i className="bi bi-x text-sm" aria-hidden />
           </button>
