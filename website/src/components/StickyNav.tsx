@@ -144,7 +144,7 @@ export function StickyNav() {
 
   const desktopNav = (
     <nav
-      className="glass backdrop-blur-md bg-background/70 pointer-events-auto flex w-full max-w-[min(100%,820px)] items-center gap-0.5 overflow-x-auto rounded-full px-3 py-1.5 hide-scrollbar sm:w-auto sm:gap-1"
+      className="glass backdrop-blur-md bg-background/70 pointer-events-auto flex w-full max-w-[min(100%,820px)] items-center gap-0.5 overflow-x-auto rounded-full px-1.5 py-1.5 hide-scrollbar sm:w-auto sm:gap-1"
       aria-label="Section navigation"
     >
       {items.map((it) => {
@@ -189,7 +189,7 @@ export function StickyNav() {
         Analyzer
       </Link>
       <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-foreground/15" />
-      <ThemeToggle className="shrink-0 mr-0.5" />
+      <ThemeToggle className="shrink-0" />
     </nav>
   );
 
