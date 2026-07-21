@@ -7,6 +7,8 @@ import joblib
 from scipy.stats import entropy
 from scipy.fft import fft
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Depends
+from collections import defaultdict
+import time
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from typing import Optional
@@ -116,6 +118,19 @@ def require_api_key(request: Request):
     if key != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized: invalid or missing API key")
 
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_MAX = 10     # max requests per window per IP
+rate_limit_buckets: dict[str, list[float]] = defaultdict(list)
+
+def rate_limit(request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    bucket = rate_limit_buckets[client_ip]
+    bucket[:] = [t for t in bucket if now - t < RATE_LIMIT_WINDOW]
+    if len(bucket) >= RATE_LIMIT_MAX:
+        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {RATE_LIMIT_MAX} requests per {RATE_LIMIT_WINDOW}s.")
+    bucket.append(now)
+
 @app.get("/api/health")
 async def health_check():
     models_loaded = sum(1 for v in models_cache.values() if v is not None)
@@ -142,6 +157,7 @@ async def stream_status():
 @app.post("/api/ingest")
 async def ingest_telemetry(background_tasks: BackgroundTasks, request: Request, file: UploadFile = File(...)):
     require_api_key(request)
+    rate_limit(request)
     contents = await file.read()
     df = pd.read_csv(io.BytesIO(contents))
 
@@ -198,6 +214,7 @@ async def ingest_telemetry(background_tasks: BackgroundTasks, request: Request, 
 @app.post("/api/ingest/stream")
 async def ingest_stream(request: Request, data: str):
     require_api_key(request)
+    rate_limit(request)
     try:
         frames = json.loads(data)
         if not isinstance(frames, list) or len(frames) == 0:
