@@ -66,6 +66,7 @@ function AnalyzerDashboard() {
   const [realPredictedActivity, setRealPredictedActivity] = useState<string>("");
 
   const [dismissedMlWarning, setDismissedMlWarning] = useState(false);
+  const [showMlWarning, setShowMlWarning] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isSpeedDropdownOpen, setIsSpeedDropdownOpen] = useState(false);
@@ -139,6 +140,16 @@ function AnalyzerDashboard() {
   useEffect(() => {
     if (rowLimit > maxAvailableRows) setRowLimit(maxAvailableRows);
   }, [maxAvailableRows, rowLimit]);
+
+  // Debounced ML warning: only show if mlWaking has been true for 2s straight
+  useEffect(() => {
+    if (!mlWaking) {
+      setShowMlWarning(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowMlWarning(true), 2000);
+    return () => clearTimeout(timer);
+  }, [mlWaking]);
 
   // Warm up the free-tier Render backend on page load + periodic health checks
   useEffect(() => {
@@ -494,7 +505,7 @@ function AnalyzerDashboard() {
         </div>
       )}
 
-      {mlWaking && !dismissedMlWarning && (
+      {showMlWarning && !dismissedMlWarning && (
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 font-mono text-[11px] text-red-600 backdrop-blur-md dark:text-red-400">
           <i className="bi bi-exclamation-triangle-fill shrink-0 text-sm" aria-hidden />
           <span className="flex-1">
