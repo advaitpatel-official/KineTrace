@@ -65,6 +65,7 @@ function AnalyzerDashboard() {
   const [realKsi, setRealKsi] = useState<number>(0);
   const [realPredictedActivity, setRealPredictedActivity] = useState<string>("");
 
+  const [dismissedMlWarning, setDismissedMlWarning] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isSpeedDropdownOpen, setIsSpeedDropdownOpen] = useState(false);
@@ -490,6 +491,23 @@ function AnalyzerDashboard() {
               <button type="button" onClick={() => setShowMobileWarning(false)} className="rounded-full bg-foreground px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-background hover:bg-foreground/80 transition-colors">Continue Anyway</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {mlWaking && !dismissedMlWarning && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 font-mono text-[11px] text-red-600 backdrop-blur-md dark:text-red-400">
+          <i className="bi bi-exclamation-triangle-fill shrink-0 text-sm" aria-hidden />
+          <span className="flex-1">
+            The ML engine is still waking up. Data will not be available for a few moments.
+          </span>
+          <button
+            type="button"
+            onClick={() => setDismissedMlWarning(true)}
+            aria-label="Dismiss warning"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-red-500/60 transition-colors hover:bg-red-500/10 hover:text-red-500"
+          >
+            <i className="bi bi-x text-sm" aria-hidden />
+          </button>
         </div>
       )}
 

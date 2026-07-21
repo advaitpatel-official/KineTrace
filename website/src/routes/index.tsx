@@ -151,7 +151,7 @@ function Index() {
 
         <section id="method" className="scroll-mt-24 pt-28">
           <div className="mx-auto max-w-6xl px-6 md:px-12">
-            <h2 className="font-display text-4xl md:text-5xl">How It Works — Step by Step</h2>
+            <h2 className="font-display text-4xl md:text-5xl">How It Works</h2>
           </div>
           <div className="mt-10 hairline-t hairline-b">
             {phases.map((p) => (

@@ -6,7 +6,7 @@ import pandas as pd
 import joblib
 from scipy.stats import entropy
 from scipy.fft import fft
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from typing import Optional
@@ -15,7 +15,12 @@ app = FastAPI(title="Kinetrace Core ML Engine", version="2.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://kinetrace.netlify.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:4321",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,6 +108,14 @@ def process_raw_telemetry(df_raw, sampling_rate=50):
         "std_dev": float(np.std(acc_mag))
     }
 
+API_KEY = os.environ.get("KINETRACE_API_KEY", "")
+def require_api_key(request: Request):
+    if not API_KEY:
+        return
+    key = request.headers.get("X-API-Key", "")
+    if key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized: invalid or missing API key")
+
 @app.get("/api/health")
 async def health_check():
     models_loaded = sum(1 for v in models_cache.values() if v is not None)
@@ -127,7 +140,8 @@ async def stream_status():
     }
 
 @app.post("/api/ingest")
-async def ingest_telemetry(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def ingest_telemetry(background_tasks: BackgroundTasks, request: Request, file: UploadFile = File(...)):
+    require_api_key(request)
     contents = await file.read()
     df = pd.read_csv(io.BytesIO(contents))
 
@@ -182,7 +196,8 @@ async def ingest_telemetry(background_tasks: BackgroundTasks, file: UploadFile =
     }
 
 @app.post("/api/ingest/stream")
-async def ingest_stream(data: str):
+async def ingest_stream(request: Request, data: str):
+    require_api_key(request)
     try:
         frames = json.loads(data)
         if not isinstance(frames, list) or len(frames) == 0:
