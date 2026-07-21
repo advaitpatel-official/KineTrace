@@ -627,96 +627,230 @@ const docGroups: DocGroup[] = [
     icon: "bi-journal-text",
     pages: [
       {
-        id: "devlog-v01",
-        title: "Where It Started",
+        id: "journal1",
+        title: "The Genesis and the Data Problem",
         eyebrow: "Development Notes",
-        summary: "KineTrace started as a research project to see if phone sensors could measure fall risk as well as lab equipment.",
+        summary: "Realized the core challenge is standardizing messy kinematic data, not algorithms, and started researching normalization methods.",
         icon: "bi-rocket-takeoff",
         body: [
           {
-            heading: "The Beginning — July 2025",
+            heading: "March 12, 2026",
             copy: [
-              "The project started with a simple question: can a phone's accelerometer detect fall risk as accurately as expensive lab-grade sensors? The answer was yes — with the right signal processing.",
-              "The key breakthrough was using the Euclidean magnitude transform (combining X, Y, Z into one value), which removes device orientation as a factor. This means data from a phone in your pocket is comparable to data from a watch on your wrist.",
+              "The conceptual groundwork for what will eventually become KineTrace began today. For weeks now, I have been turning the same problem over and over in my head. How do you extract meaningful, predictive insight from raw kinematic data? It seems simple until you actually sit down and try to answer it. Today was the day I finally sat down.",
+              "What struck me almost immediately is that the initial challenge isn't algorithmic at all. It is structural. It would be easy to assume that the hard part of a project like this is choosing the right model or tuning the right parameters. That assumption falls apart the moment you actually look at the data you're working with. I spent the evening working through open source datasets. The deeper I got, the more I realized just how messy and unstandardized real world data truly is. Nothing arrives in a clean, ready to use form. It arrives noisy, inconsistent, and full of quiet traps for anyone who tries to build on top of it too fast.",
+              "The goal, as I've defined it for myself, is to build an engine capable of tracing and predicting movement patterns. But raw time series data is inherently noisy by nature. It is full of small fluctuations, irregularities, and outliers that don't reflect anything meaningful about the underlying pattern. Before I can even begin to think seriously about neural networks or predictive trees, I need something much more foundational. I need a robust mathematical basis for standardizing this information, so that later stages of the project aren't built on sand.",
+              "So that's where I started tonight. Not with modeling, but with math. I began sketching out a data pipeline. I researched how to mathematically normalize multidimensional arrays, so that whatever algorithm eventually sits downstream of this preprocessing won't be skewed by outliers it was never equipped to handle. It's not glamorous work, and there's no visible progress to point to yet. No working model, no interface, nothing to demo. But I know from experience that this is the kind of invisible foundation that decides whether everything built on top of it later actually holds up.",
             ],
           },
         ],
       },
       {
-        id: "devlog-dual-index",
-        title: "CSI + KSI: Why Two Scores?",
+        id: "journal2",
+        title: "The Garbage In, Garbage Out Paradigm",
         eyebrow: "Development Notes",
-        summary: "Two scores separate what's happening now (CSI) from what's likely to happen next (KSI).",
+        summary: "Wrote data cleaning scripts and learned that ML is mostly data wrangling, finishing with a working normalization pipeline.",
         icon: "bi-graph-up-arrow",
         body: [
           {
-            heading: "Why Two Scores? — March 2026",
+            heading: "April 4, 2026",
             copy: [
-              "The Current Stability Index (CSI) measures how stable you are right now. The KineTrace Stability Index (KSI) predicts future risk by looking at how erratic your movement patterns are. A high CSI with a low KSI means you're moving well now but showing signs that risk is increasing.",
-              "This dual-index approach was inspired by clinical research showing that movement variability (not just movement quality) is a strong predictor of future falls.",
+              "Today was a lesson. A tedious one, but an important one. It was a reality that every data scientist eventually has to confront directly. The quality of your output is entirely bound by the quality of your input. Garbage in, garbage out isn't just a saying. It is the organizing principle of the entire day.",
+              "I formally began writing the Python scripts responsible for data ingestion. I leaned heavily on the pandas library to do the heavy lifting of loading, inspecting, and manipulating the data. I went in with a certain amount of confidence, honestly. I'd done data work before, and I assumed the ingestion step would be a relatively fast formality on the way to the more interesting modeling work. That confidence didn't survive contact with reality. My initial attempts to feed the raw data into even a basic algorithm failed spectacularly. The reason was clear in retrospect. I had badly underestimated the prevalence of null values and formatting inconsistencies scattered throughout the test data.",
+              "So I stopped, backed up, and committed to doing the unglamorous work properly. I spent over eight hours, most of the day, writing transformation functions whose entire purpose was to clean, parse, and interpolate missing data points. It was slow, iterative work. Find a broken assumption. Write a function to handle it. Test it against the dataset. Find the next broken assumption. Repeat. There's not much intellectual glamour in writing an interpolation function to patch a gap in a time series. But there's a real satisfaction in watching a chaotic dataset slowly become something trustworthy.",
+              "By the end of it, I'd arrived at a conclusion that I suspect will define my approach to this entire project going forward. Machine learning is perhaps 20 percent algorithm design and 80 percent data wrangling. It's tempting to think of the algorithm as the real work and the data cleaning as a chore to get through on the way there. That framing is backwards. If the ingestion pipeline is flawed, the resulting predictions aren't just weak. They are actively misleading, which is arguably worse than having no model at all. A model trained on bad data doesn't fail loudly. It fails quietly, producing confident looking answers that are wrong in ways that are hard to detect after the fact.",
+              "The payoff for today's grind is simple. I finally have a script that reliably takes chaotic, inconsistent raw input and outputs a clean, normalized CSV file. It's not exciting to look at, but it's the foundation everything else depends on.",
             ],
           },
         ],
       },
       {
-        id: "devlog-data-pipeline",
-        title: "Where the Data Comes From",
+        id: "journal3",
+        title: "Algorithmic Selection and Overfitting",
         eyebrow: "Development Notes",
-        summary: "The built-in example data is based on two real research datasets.",
+        summary: "Built a Random Forest model after an SVM proved too slow, then fixed severe overfitting by tuning hyperparameters down to a realistic 87% accuracy.",
         icon: "bi-diagram-3",
         body: [
           {
-            heading: "The Datasets — February 2026",
+            heading: "April 28, 2026",
             copy: [
-              "The built-in factory dataset blends two public research datasets: UCI HAR (~7,000 frames of phone accelerometer data from 30 subjects) and MotionSense (~3,500 frames from iPhone sensors with gyroscope data). Together they provide a robust foundation for cross-device analysis.",
+              "I achieved my first successful model compilation today, using scikit learn to bring together everything the data pipeline has been building toward. It felt like a genuine milestone. It was the moment where the project stops being purely about data plumbing and starts being about actual predictive intelligence. But the victory, as these things often go, was short lived.",
+              "My first instinct was to experiment with a Support Vector Machine, or SVM, as the core classification algorithm. On paper it seemed like a reasonable starting point. But in practice the computational overhead turned out to be too high for the kind of response times I want this engine to eventually achieve. An algorithm that technically works but is too slow to deploy in a real time context isn't really viable for what KineTrace is meant to be. So I made the call to pivot away from it.",
+              "I moved instead to building a Random Forest Classifier. The early results looked almost too good. Accuracy metrics hovered around 99 percent. My first reaction was excitement, but that excitement didn't last long. A number like that should always raise suspicion rather than celebration. A deep dive into cross validation confirmed exactly what I feared. The model wasn't actually learning the underlying patterns in the data at all. It was simply memorizing the training set. It was severely overfitted. It performed beautifully on data it had already seen and collapsed the moment it encountered anything new.",
+              "That discovery kicked off the rest of the week. I spent it tuning hyperparameters, limiting the maximum depth of individual trees, and adjusting the minimum number of samples required per leaf node. Each of these adjustments is a small lever. Pulling on them one at a time to see how the model's behavior shifts is a slow, methodical process. Watching the accuracy metric drop from that suspicious 99 percent down to a more realistic 87 percent wasn't a step backward. It was the model finally being honest with me. More importantly, it now generalized beautifully to unseen validation data, which is the actual measure of whether any of this is useful.",
+              "Once I was satisfied with the model's behavior, I serialized the trained model using joblib. This froze it into a form that can be loaded and reused without retraining from scratch every time. The brain of the engine is finally built. Everything from here is about giving that brain a body.",
             ],
           },
         ],
       },
       {
-        id: "devlog-ksi-formula",
-        title: "How KSI Is Calculated",
+        id: "journal4",
+        title: "Architecting the Engine and Server Paradigms",
         eyebrow: "Development Notes",
-        summary: "The formula was tested against clinical fall risk assessments to find the best weight values.",
+        summary: "Realized the local Python script needs to become a real web backend and started shifting mindset from data science project to software product.",
         icon: "bi-calculator",
         body: [
           {
-            heading: "The Formula — January 2026",
+            heading: "May 14, 2026",
             copy: [
-              "The KSI formula is: KSI = 100 - (50 × average jerk + 20 × standard deviation). The weights (50 and 20) were found by testing over 200 combinations and picking the ones that best matched actual clinical fall risk assessments (Tinetti and Berg Balance scales).",
-              "Higher jerk and higher variance both reduce the KSI score. A score of 100 means perfectly smooth, consistent movement. A score of 0 means completely chaotic, unpredictable movement.",
+              "The core concept for KineTrace is finally moving from a theoretical, isolated script into something resembling a scalable architecture. I spent the afternoon drafting the overall system design. The process of doing so forced a realization I'd been circling for a while without quite landing on. My local Python environment is a dead end if this tool is ever going to be used by anyone other than me.",
+              "That realization reframes almost everything about how I need to think about the project going forward. Because the processing relies on my serialized Random Forest model to analyze complex structures, the backend needs to be capable of receiving web requests, deserializing that model into memory, and returning a prediction within milliseconds. This is not a nice to have. It is a core requirement. A model that only runs when I personally execute a script on my own machine isn't a product. It's a personal tool. Bridging the gap between raw algorithmic processing and genuine web accessibility is going to be the first true test of whether this system's design actually holds up under real conditions.",
+              "There's a mental shift happening alongside the technical one. Up to this point, I've been thinking about KineTrace as a data science script. Its success is measured by accuracy metrics and clean CSV outputs. Starting today, I need to start viewing it as a software engineering product instead. Its success is measured by reliability, accessibility, and how it behaves when other people, and other systems, depend on it. That's a different discipline. I can feel myself having to adjust how I approach even basic decisions because of it.",
             ],
           },
         ],
       },
       {
-        id: "devlog-signal-processors",
-        title: "Why 8 Filters?",
+        id: "journal5",
+        title: "The API Epiphany",
         eyebrow: "Development Notes",
-        summary: "Different filters serve different purposes. Each one changes how jerk and variance are calculated.",
+        summary: "Chose FastAPI over Flask and Django for its async support and pydantic based request validation.",
         icon: "bi-funnel",
         body: [
           {
-            heading: "Choosing the Right Filter — April 2026",
+            heading: "May 26, 2026",
             copy: [
-              "Each filter was chosen to cover a common signal processing need. Butterworth is the standard for general filtering. Chebyshev excels at tremor detection. Bessel preserves walking patterns. Median and Gaussian handle different noise types. Kalman is ideal for live data. Savitzky-Golay keeps peak shapes. Wavelet handles complex, changing signals best.",
-              "The filter you choose affects your KSI score — filters that amplify jerk (like Chebyshev) produce lower scores, while smoothing filters (like Gaussian) produce higher scores.",
+              "After spending real time evaluating several backend web frameworks, mainly Flask and Django, the two names that come up constantly in any discussion of Python web development, I made the definitive choice to build the KineTrace backend using FastAPI instead. It wasn't a decision I made lightly, given how established the alternatives are. But the more I looked into it, the clearer the case became.",
+              "The decision ultimately came down to two things. FastAPI's asynchronous capabilities matter enormously for an application that needs to handle requests efficiently under load. Its native integration with Python type hints turned out to be more than just a syntactic nicety. Working with it today felt like something of a revelation. By leveraging pydantic models, I'm able to strictly define the exact shape and data types that the machine learning engine expects to receive on every request. That might sound like a small thing, but the implications are significant. If a malformed request comes in, the framework automatically rejects it before it ever has a chance to reach, and potentially crash, my predictive model.",
+              "That distinction feels important enough to sit with for a moment. Up until now, I've mostly been writing code that works under the conditions I expect it to encounter. What I'm writing now is different in kind. It is code that defends itself against the conditions I don't expect. That's a meaningful shift in how I think about the reliability of this system. It's given me a lot more confidence about what happens once this application is no longer just running on my machine, under my control, with only my own well behaved inputs to worry about.",
             ],
           },
         ],
       },
       {
-        id: "devlog-whats-next",
-        title: "What's Next?",
+        id: "journal6",
+        title: "Building the Bridge with FastAPI",
         eyebrow: "Development Notes",
-        summary: "Future plans include tracking changes over time, personalized baselines, and wearable integration.",
+        summary: "Built the first API endpoints (/api/ingest and /api/status) and tested them locally with Postman.",
         icon: "bi-lightbulb",
         body: [
           {
-            heading: "Roadmap — May 2026",
+            heading: "June 3, 2026",
             copy: [
-              "Future versions will include: tracking KSI scores over time (longitudinal monitoring), personalized baselines adjusted for age and health conditions, and integration with wearable APIs (Apple HealthKit, Google Fit) for automatic data collection.",
-              "A machine learning model trained on real fall outcomes is in early testing — currently predicting falls within a 30-day window with 87% accuracy.",
+              "I spent today doing the structural work of turning yesterday's decision into something real. I actually structured the backend application and wrapped my machine learning functions into dedicated API endpoints. The two I focused on specifically were data ingestion, at /api/ingest, and a system health check, at /api/status. These two endpoints represent the minimum viable skeleton of the whole backend. One to actually do the work, and one to confirm the server is alive and responding at all.",
+              "For now, everything is running strictly in a local development environment, bound to 127.0.0.1:8000. There's something genuinely satisfying about this stage of a project that's easy to forget once things get more complex. It is the simple act of using a client like Postman to send a raw JSON payload to that local address, and then watching, in real time, as the FastAPI server parses the incoming data, executes the Random Forest logic underneath it, and returns a cleanly formatted prediction. It's the first moment where the entire pipeline, from raw request to model inference to structured response, is visible end to end, running as a connected system rather than a set of disconnected scripts.",
+              "One thing that's been quietly saving me hours throughout all of this is FastAPI's automatic interactive documentation generation. Rather than manually writing out and maintaining documentation for every endpoint, or manually retesting every route by hand each time something changes, I can visually map out the API contracts as they exist right now, in real time, directly from the code itself. It's a small feature in the grand scheme of the framework, but its cumulative effect on my day to day workflow has been significant.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal7",
+        title: "Constructing the User Interface",
+        eyebrow: "Development Notes",
+        summary: "Set up a React frontend with Vite in a separate directory and began tackling async state management (loading, success, error).",
+        icon: "bi-rocket-takeoff",
+        body: [
+          {
+            heading: "June 12, 2026",
+            copy: [
+              "With the backend logic stabilizing, I pivoted entirely to the frontend architecture today. A working backend is only half of a usable product. I need a user interface that can actually and dynamically visualize the data KineTrace is processing. Otherwise all of this backend work stays invisible to anyone who isn't querying it directly through a tool like Postman.",
+              "I set up a React development environment using Vite. I made a deliberate choice to nest it inside its own dedicated website directory rather than mixing it in with the backend code. That decision was purely about maintaining a clean separation of concerns within the Git repository. It kept the frontend and backend as distinct, independently manageable pieces of the overall project rather than letting them tangle together. It's a small organizational choice now, but I expect it to pay off as the codebase grows.",
+              "Working with Vite for the first time in this project, the speed of its hot module replacement stood out immediately as a massive upgrade to the developer experience compared to more traditional bundlers I've used in the past. Seeing changes reflected almost instantly, without a full page reload breaking my train of thought, makes the iterative process of building out UI components feel far less friction heavy than it otherwise would.",
+              "I've begun building out the core UI components today, and I'm focusing heavily on state management as I do. Tracking the asynchronous state of a network request, managing the interface cleanly across the loading, success, and error phases of a single request, is proving to be a genuinely complex puzzle in React. It sounds simple when described in the abstract. In practice it means thinking carefully about every possible state the UI could be in at any given moment, and making sure none of them leave the user staring at something broken or unclear.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal8",
+        title: "Failsafes and Asynchronous Design",
+        eyebrow: "Development Notes",
+        summary: "Connected the frontend to the backend with fetch requests and added a local fallback failsafe for dropped connections.",
+        icon: "bi-graph-up-arrow",
+        body: [
+          {
+            heading: "June 21, 2026",
+            copy: [
+              "I spent this week wiring the React frontend components to issue asynchronous fetch requests to the local FastAPI server. This connected the interface I've been building to the backend logic that's been running quietly underneath it. That connection alone took real care, but I also used this stretch of time to implement something I consider a critical failsafe. If the frontend ever drops its connection to the backend API, the application catches that failure and falls back to a limited, local computation performed directly within the browser, rather than simply breaking or leaving the user with nothing.",
+              "I'm genuinely proud of engineering that redundancy. It's the kind of feature that a user will hopefully never even notice, precisely because it's doing its job. But actually testing it surfaced a harder truth. It highlighted exactly how fragile client server communication can be over a network, even in a relatively controlled local setup. Connections drop, requests time out, responses arrive malformed or not at all. A resilient application has to plan for all of that rather than assume the happy path is the only path.",
+              "Making sure the UI remains responsive, that it doesn't freeze or lock up while waiting on the machine learning engine to finish computing a result, required a genuinely deep dive into JavaScript Promises and the React component lifecycle. It's one thing to understand these concepts in the abstract. It's another to apply them correctly under the specific pressure of a real asynchronous, potentially unreliable network call. This week was as much about internalizing that distinction as it was about writing any particular line of code.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal9",
+        title: "The Polish and the Preparation",
+        eyebrow: "Development Notes",
+        summary: "Polished the local app's UX (loading indicators, smooth transitions, graceful errors) while feeling anxious about deploying beyond localhost.",
+        icon: "bi-diagram-3",
+        body: [
+          {
+            heading: "July 1, 2026",
+            copy: [
+              "The local application is functioning beautifully, end to end. There's real satisfaction in seeing it work as a coherent whole rather than as a collection of separate pieces I've been building in isolation for months. The frontend accepts user input, sanitizes it, and sends it off to the local backend. The backend processes that data through the ML model and returns tracing predictions, which the frontend then takes and renders into something genuinely readable and usable.",
+              "I spent today on polish. This is the kind of work that doesn't show up in a changelog as a major feature but matters enormously to how the application actually feels to use. That meant adding visual loading indicators so the interface never leaves someone wondering whether anything is happening. It meant smoothing out transitions so state changes don't feel abrupt or jarring. It meant making sure the error handling degrades gracefully rather than exposing something broken or confusing when something inevitably goes wrong.",
+              "But underneath the satisfaction of today's progress, a looming anxiety is starting to set in, and I don't think it's unreasonable. Running an application on localhost is, by definition, a controlled and safe environment. I am the only user, the only source of input, and the only variable that can go wrong. Deploying this same architecture out onto the public internet, where it has to survive independently of me and handle conditions I can't fully predict or control in advance, is a daunting next step. It's one thing to build something that works when you're the only one testing it. It's another thing entirely to hand it over to the unpredictability of the open internet.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal10",
+        title: "The Deployment Crucible and the Sunk Cost Fallacy",
+        eyebrow: "Development Notes",
+        summary: "Battled a corrupted Windows virtual environment, then let go of it and deployed the backend cleanly to Render from a fresh requirements.txt.",
+        icon: "bi-calculator",
+        body: [
+          {
+            heading: "July 8, 2026",
+            copy: [
+              "Today was a masterclass. Not in a subject I chose to study, but in a lesson I was forced to learn through sheer frustration. It taught me the importance of letting go of a broken configuration rather than continuing to fight it.",
+              "I attempted to freeze my Python dependencies today in preparation for a cloud deployment on Render. In the process, my local Windows virtual environment completely corrupted. What followed was hours of cascading tracebacks and bizarre IndentationError messages appearing deep inside the core pip library itself. These are the kind of errors that don't point to an obvious fix, because they're not really about the code I wrote at all. They are about the environment underneath it having quietly broken in some way I couldn't immediately diagnose.",
+              "I spent hours trying to salvage that environment, and in doing so, I fell victim to a very familiar trap. It is the sunk cost fallacy. Because I had already invested so much time trying to repair the venv, every additional hour spent on it felt justified by the hours that came before, even as the returns on that effort kept shrinking toward zero. Eventually, it clicked. Render's cloud infrastructure does not care about my local machine's corrupted state. Nothing about the broken environment on my own computer was actually relevant to whether the deployment would succeed.",
+              "So I stopped repairing and started rebuilding from a different angle. I manually drafted a clean requirements.txt file, listing only the explicit dependencies the project actually needs. I pushed it to GitHub and let Render provision a completely clean Linux environment from scratch, rather than trying to replicate my broken local setup. It worked flawlessly, on the first real attempt, once I stopped trying to force the old, corrupted environment to cooperate. The backend engine is officially live on the web. This is a genuinely significant milestone, even if the road to it was more about abandoning a bad approach than perfecting a good one.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal11",
+        title: "Navigating CI/CD and Frontend Build Paths",
+        eyebrow: "Development Notes",
+        summary: "Fixed Netlify build failures by correcting the base directory and publish directory (website/dist) settings.",
+        icon: "bi-funnel",
+        body: [
+          {
+            heading: "July 15, 2026",
+            copy: [
+              "I hit another significant roadblock today, this time while attempting to deploy the React frontend via Netlify. The automated Continuous Integration builds repeatedly failed. The underlying reason turned out to be structural rather than a bug in my code. Netlify's pipeline was executing from the root directory of the repository, fruitlessly searching there for a package.json file that I had intentionally placed inside the website subdirectory back when I set up the project structure in June.",
+              "Diagnosing that took some digging into the platform's deployment settings, since the failure messages didn't immediately point to the mismatch between where Netlify was looking and where the file actually lived. I eventually had to explicitly define the Base directory setting so the build system would know where to actually start looking for the project it was supposed to be building.",
+              "Once that was resolved, the build failed again almost immediately. This time it complained about a missing build directory. That sent me further into the underlying compilation behavior of Vite, which, I confirmed, outputs its production files to a folder named dist by default. Aligning the CI/CD pipeline configuration with my actual physical project structure, website/dist specifically, was tedious and required careful attention to detail. But adjusting the publish directory setting finally resolved the chain of errors. The frontend is hosted, at last, after a day that felt disproportionately long relative to what turned out to be, fundamentally, a pathing problem.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "journal12",
+        title: "The Integration Nightmare",
+        eyebrow: "Development Notes",
+        summary: "Diagnosed and fixed frontend-backend connection failures caused by a hardcoded localhost URL and mismatched API routes.",
+        icon: "bi-lightbulb",
+        body: [
+          {
+            heading: "July 18, 2026",
+            copy: [
+              "The frontend is deployed. The backend is hosted. And yet, today, the two systems absolutely refused to communicate with each other. This was a frustrating place to be after so much individual progress on each side independently.",
+              "Opening the browser's developer console revealed a sea of red text. There were ERR_CONNECTION_REFUSED errors, 404 Not Found responses, and Cross Origin Resource Sharing blocks stacking up on top of each other. The first major oversight I identified was embarrassingly simple in hindsight. I had hardcoded http://127.0.0.1:8000 directly into my fetch requests months ago, back when everything was running locally, and never updated it. The live, cloud hosted frontend was, quite literally, trying to find the backend inside the user's own computer. This is an address that meant something in a local development environment and meant nothing at all once the frontend was actually deployed to the public internet.",
+              "Even after implementing dynamic environment variables to properly point requests at the correct Render URL instead, the requests continued to fail, now with 404 errors rather than connection refusals. That required a more careful investigation. By working through the browser's Network tab, step by step, I eventually realized that my frontend's request paths didn't perfectly match the exact routing paths defined by my backend's decorators. These were small mismatches that were invisible until I lined the two up side by side. Tracing the exact path of the data, starting from a button click in React, traveling across the internet to the FastAPI router, and then returning back again, forced me to map out and carefully sync every single variable in that pipeline, end to end, rather than assuming any one piece of it was already correct just because it had worked in isolation.",
+            ],
+          },
+        ],
+      },
+       {
+        id: "journal13",
+        title: "Hardening the Stack and Securing the Engine",
+        eyebrow: "Development Notes",
+        summary: "Locked down the app for production with strict CORS, an API key system, and rate limiting, officially completing KineTrace.",
+        icon: "bi-lightbulb",
+        body: [
+          {
+            heading: "July 20, 2026",
+            copy: [
+              "With the two previously separate halves of the system finally communicating successfully, my focus today shifted entirely away from connectivity and toward security and optimization. This is the work that doesn't make anything new possible, but makes everything already built actually safe to leave running in public.",
+              "The starting point for that shift was a hard look at something I'd left too open out of pure convenience. Leaving an API completely open to the internet with a wildcard CORS policy, allow_origins equal to a wildcard, violates the principle of least privilege and leaves the server genuinely vulnerable to exploitation. It was functional, but functional isn't the same as responsible. Today was about closing that gap.",
+              "I spent the day systematically locking down the architecture, piece by piece. First, I configured the FastAPI middleware to strictly accept requests only from the verified Netlify frontend origin. This closed off the wildcard policy that had been sitting there since deployment. Next, to prevent unauthorized abuse of the compute heavy machine learning endpoints, the kind of endpoints that are expensive to run and therefore an attractive target for automated abuse, I engineered an API key validation system. It uses a secret dependency header, X-API-Key, injected securely via server environment variables rather than hardcoded anywhere in the codebase. Finally, I integrated the slowapi library to enforce strict rate limits based on IP address. This added a further layer of protection against automated spam directed at the cloud server.",
+              "Looking back at where this project started, the distance traveled is hard to fully take in. What began in March as an isolated, messy data script, something that couldn't even reliably ingest a CSV file without falling over, has officially evolved into KineTrace. It is a secured, cloud hosted, full stack machine learning application. It's been a long road from normalizing multidimensional arrays on a quiet March evening to configuring rate limits on a production server. But every step along that road built directly on the one before it.",
             ],
           },
         ],
