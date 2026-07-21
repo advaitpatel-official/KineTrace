@@ -9,12 +9,12 @@ MASTER_DB = os.path.join(DATA_DIR, "kine_features_motionsense_mag.csv")
 MODEL_DIR = "models"
 
 def run_scientific_training():
-    print("⚡ Initiating scientific ML training iteration loop...")
+    print("Initiating scientific ML training iteration loop...")
     
     os.makedirs(MODEL_DIR, exist_ok=True)
     
     if not os.path.exists(MASTER_DB):
-        print(f"⚠️ Registry not found at {MASTER_DB}. Constructing initial synthetic baseline...")
+        print(f"Registry not found at {MASTER_DB}. Constructing initial synthetic baseline...")
         np.random.seed(42)
         mock_data = np.random.normal(loc=2.0, scale=0.5, size=(800, 9))
         df = pd.DataFrame(mock_data, columns=[
@@ -64,7 +64,7 @@ def run_scientific_training():
     np.save(mean_path, baseline_mean)
     np.save(cov_path, baseline_cov_inv)
 
-    print(f"💾 Models serialized successfully directly to folder: {os.path.abspath(MODEL_DIR)}")
+    print(f"Models serialized successfully directly to folder: {os.path.abspath(MODEL_DIR)}")
     print(" All ML Core systems compiled and serialized successfully.")
 
 if __name__ == "__main__":

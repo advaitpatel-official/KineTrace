@@ -9,7 +9,7 @@ os.makedirs(output_dir, exist_ok=True)
 report_files = glob.glob(os.path.join(output_dir, "run_*_clinical_report.csv"))
 
 if not report_files:
-    print("⚠️ No clinical batch reports found. Please execute 'run_kinetrace_analysis.py' first.")
+    print("No clinical batch reports found. Please execute 'run_kinetrace_analysis.py' first.")
     exit()
 
 latest_report = max(report_files, key=os.path.getctime)
@@ -18,7 +18,7 @@ print(f"Analyzing patient mobility structures from: {latest_report}")
 df = pd.read_csv(latest_report)
 
 if 'KSI' not in df.columns or 'Predicted_Activity' not in df.columns:
-    print("⚠️ Required KineTrace metrics (KSI/Predicted_Activity) missing from report.")
+    print("Required KineTrace metrics (KSI/Predicted_Activity) missing from report.")
     exit()
 
 active_activities = ['Walking', 'Upstairs', 'Downstairs', 'Lying/Jogging']

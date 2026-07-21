@@ -4,7 +4,7 @@ import requests
 
 csv_files = glob.glob("data/MotionSense/**/*.csv", recursive=True)
 if not csv_files:
-    print("❌ Could not find any MotionSense CSV files!")
+    print("Could not find any MotionSense CSV files!")
     exit()
 
 target_file = csv_files[0]
@@ -16,9 +16,9 @@ with open(target_file, "rb") as f:
     response = requests.post(url, files=files)
 
 if response.status_code == 200:
-    print("✅ Success! Server Response:")
+    print("Success! Server Response:")
     import json
     print(json.dumps(response.json(), indent=4))
 else:
-    print(f"❌ Failed with status code {response.status_code}")
+    print(f"Failed with status code {response.status_code}")
     print(response.text)
