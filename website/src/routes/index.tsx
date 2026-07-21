@@ -52,8 +52,8 @@ const capabilities = [
   { n: "02", title: "Fast browsing for large datasets", body: "Scroll through 10,000+ rows of data smoothly. The system only loads 50 rows at a time, with easy navigation to jump anywhere." },
   { n: "03", title: "A stability score you can understand", body: "Each chunk of movement gets a single number from 0–100 and a color-coded label: Optimal (green), Degraded (yellow), or Critical (red). No complex charts to decode." },
   { n: "04", title: "8 ways to clean up your signal", body: "Different filters highlight different types of movement. Butterworth smooths noise. Kalman adapts to changing conditions. Wavelet removes multi-layered interference. Pick what works for your data." },
-  { n: "05", title: "See your movement from every angle", body: "Watch the live waveform as it plays back. See a 3D cube rotate based on your sensor's pitch and roll. View histograms and frequency spectrums — all toggleable on and off." },
-  { n: "06", title: "Save and share your work", body: "Export the waveform as an image (PNG or SVG), download your full dataset as JSON, get a template for collecting new data, or generate a plain-text analytics report." },
+  { n: "05", title: "See your movement from every angle", body: "Watch the live waveform as it plays back. See a mesh rotate based on your sensor's pitch and roll. View histograms and frequency spectrums — all toggleable on and off." },
+  { n: "06", title: "Save and share your work", body: "Export the waveform as an image (PNG), download your full dataset as JSON, get a template for collecting new data, or generate a plain-text analytics report." },
 ];
 
 const demoOutput = {
@@ -363,10 +363,10 @@ function Index() {
               <div className="max-w-md text-xs text-muted-foreground">
                 © KineTrace {new Date().getFullYear()}. Research prototype.
                 <br />
-                Built on blended UCI HAR + MotionSense corpora.
+                Built on blended UCI HAR + MotionSense datasets.
               </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:text-right">
-                v0.1 · experimental
+                v0.1 · prototype
               </div>
             </div>
             <svg
