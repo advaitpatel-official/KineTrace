@@ -329,12 +329,12 @@ function Index() {
             <div className="mt-16 hairline-t">
               <div className="grid grid-cols-12 gap-4 py-6">
                 <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Profiles</div>
-                <div className="col-span-6 md:col-span-4 self-end text-sm">
+                <div className="col-span-12 md:col-span-4 self-end text-sm">
                   <a href="https://www.linkedin.com/in/advait-patel-a2a6323aa/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
                     <i className="bi bi-linkedin" aria-hidden /> LinkedIn
                   </a>
                 </div>
-                <div className="col-span-6 md:col-span-4 self-end text-sm">
+                <div className="col-span-12 md:col-span-4 self-end text-sm">
                   <a href="https://github.com/advaitpatel-official/KineTrace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
                     <i className="bi bi-github" aria-hidden /> GitHub
                   </a>
@@ -342,12 +342,12 @@ function Index() {
               </div>
               <div className="hairline-t grid grid-cols-12 gap-4 py-6">
                 <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Contact</div>
-                <div className="col-span-6 md:col-span-4 self-end text-sm">
-                  <a href="mailto:advait.patel@outlook.com" className="inline-flex items-center gap-2 hover:underline">
+                <div className="col-span-12 md:col-span-4 self-end text-sm">
+                  <a href="mailto:advait.patel@outlook.com" className="inline-flex items-center gap-2 hover:underline break-all">
                     <i className="bi bi-envelope" aria-hidden /> advait.patel@outlook.com
                   </a>
                 </div>
-                <div className="col-span-6 md:col-span-4 self-end text-sm">
+                <div className="col-span-12 md:col-span-4 self-end text-sm">
                   <a href="https://advaitpatel.netlify.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
                     <i className="bi bi-box-arrow-up-right" aria-hidden /> Developer Website
                   </a>
@@ -356,6 +356,24 @@ function Index() {
             </div>
           </div>
         </section>
+
+        <div className="px-6 md:px-12">
+          <div className="mx-auto max-w-6xl">
+            <div className="mt-16 hairline-t py-6 text-xs text-muted-foreground leading-relaxed space-y-3">
+              <p className="font-semibold text-foreground">Medical & Physical Activity Disclaimer</p>
+              <p>
+                KineTrace is an experimental software demonstration tool and is <strong>NOT</strong> a medical device, diagnostic tool, or healthcare service. The movement analyses, predictions, and metrics provided by KineTrace are for informational and research purposes only and do not constitute medical, biomechanical, or physical therapy advice.
+              </p>
+              <p>
+                By using this application or participating in data collection, you acknowledge that engaging in physical activities (including walking, running, jumping, or climbing stairs) carries inherent risk of physical injury. You voluntarily assume all risks associated with performing these movements and agree that KineTrace and its operators shall not be liable for any injuries, damages, or claims arising from your use of the software or participation in trial activities.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <a href="#" className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
+                <a href="#" className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <footer className="px-6 pb-6 md:px-12">
           <div className="mx-auto max-w-6xl">
