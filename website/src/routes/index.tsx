@@ -131,7 +131,7 @@ function Index() {
 
         <section id="about" className="scroll-mt-24 px-6 pt-28 md:px-12">
           <div className="mx-auto max-w-6xl">
-            <h2 className="font-display text-4xl md:text-5xl">What is KineTrace?</h2>
+            <h2 className="font-display text-4xl md:text-5xl">About</h2>
             <div className="mt-8 max-w-full space-y-4 text-base leading-relaxed text-foreground/80">
               <p>
                 KineTrace is a tool that turns movement data from your phone, smartwatch, or wearable sensor into a simple stability score. Think of it like a fitness tracker, but instead of counting steps, it measures <strong>how steady or unsteady your movement is</strong>.
@@ -368,8 +368,9 @@ function Index() {
                 By using this application or participating in data collection, you acknowledge that engaging in physical activities (including walking, running, jumping, or climbing stairs) carries inherent risk of physical injury. You voluntarily assume all risks associated with performing these movements and agree that KineTrace and its operators shall not be liable for any injuries, damages, or claims arising from your use of the software or participation in trial activities.
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
-                <a href="#" className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
-                <a href="#" className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
+                <a href="/src/assets/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
+                <a href="/src/assets/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
+                <a href="/src/assets/files/LICENSE.md" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-earmark-text" /> License</a>
               </div>
             </div>
           </div>
