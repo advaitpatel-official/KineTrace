@@ -13,7 +13,7 @@ const PHRASES = [
 
 export function Preloader({ subtext }: { subtext?: string }) {
   const [isFirstLoad] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined") return true;
     return !(window as any).__ktHasLoaded;
   });
 
