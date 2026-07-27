@@ -51,11 +51,27 @@ const factoryDataset: TelemetryFrame[] = (() => {
 })();
 
 function AnalyzerDashboard() {
-  const [activeTab, setActiveTab] = useState<"stream" | "windows" | "analytics">("stream");
-  const [selectedWindowIds, setSelectedWindowIds] = useState<Set<string>>(new Set());
-  const [rowLimit, setRowLimit] = useState<number>(50);
-  const [noiseFloor, setNoiseFloor] = useState<number>(0.15);
-  const [activeFilter, setActiveFilter] = useState("Butterworth lowpass");
+  const [activeTab, setActiveTab] = useState<"stream" | "windows" | "analytics">(() => {
+    try {
+      const stored = localStorage.getItem("kt-active-tab");
+      return (stored === "windows" || stored === "analytics") ? stored : "stream";
+    } catch { return "stream"; }
+  });
+  const [selectedWindowIds, setSelectedWindowIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem("kt-selected-window-ids");
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
+  const [rowLimit, setRowLimit] = useState<number>(() => {
+    try { const stored = localStorage.getItem("kt-row-limit"); return stored ? parseInt(stored, 10) : 50; } catch { return 50; }
+  });
+  const [noiseFloor, setNoiseFloor] = useState<number>(() => {
+    try { const stored = localStorage.getItem("kt-noise-floor"); return stored ? parseFloat(stored) : 0.15; } catch { return 0.15; }
+  });
+  const [activeFilter, setActiveFilter] = useState(() => {
+    try { return localStorage.getItem("kt-active-filter") || "Butterworth lowpass"; } catch { return "Butterworth lowpass"; }
+  });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -75,23 +91,56 @@ function AnalyzerDashboard() {
   const [dismissedMlWarning, setDismissedMlWarning] = useState(false);
   const [mlWarningType, setMlWarningType] = useState<"waking" | "offline" | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
+    try { const stored = localStorage.getItem("kt-playback-speed"); return stored ? parseFloat(stored) : 1; } catch { return 1; }
+  });
   const [isSpeedDropdownOpen, setIsSpeedDropdownOpen] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    try { const stored = localStorage.getItem("kt-current-page"); return stored ? parseInt(stored, 10) : 1; } catch { return 1; }
+  });
 
-  const [waveformStart, setWaveformStart] = useState(0);
-  const [waveformEnd, setWaveformEnd] = useState(50);
-  const [waveformStartInput, setWaveformStartInput] = useState("0");
-  const [waveformEndInput, setWaveformEndInput] = useState("50");
+  const [waveformStart, setWaveformStart] = useState(() => {
+    try { const stored = localStorage.getItem("kt-waveform-start"); return stored ? parseInt(stored, 10) : 0; } catch { return 0; }
+  });
+  const [waveformEnd, setWaveformEnd] = useState(() => {
+    try { const stored = localStorage.getItem("kt-waveform-end"); return stored ? parseInt(stored, 10) : 50; } catch { return 50; }
+  });
+  const [waveformStartInput, setWaveformStartInput] = useState(() => {
+    try { return localStorage.getItem("kt-waveform-start-input") || "0"; } catch { return "0"; }
+  });
+  const [waveformEndInput, setWaveformEndInput] = useState(() => {
+    try { return localStorage.getItem("kt-waveform-end-input") || "50"; } catch { return "50"; }
+  });
 
-  const [showHistogram, setShowHistogram] = useState(false);
-  const [showFrequencySpectrum, setShowFrequencySpectrum] = useState(false);
-  const [showLiveWaveform, setShowLiveWaveform] = useState(true);
-  const [showStabilityGauges, setShowStabilityGauges] = useState(true);
-  const [showOrientationMesh, setShowOrientationMesh] = useState(true);
+  const [showHistogram, setShowHistogram] = useState(() => {
+    try { return localStorage.getItem("kt-show-histogram") === "true"; } catch { return false; }
+  });
+  const [showFrequencySpectrum, setShowFrequencySpectrum] = useState(() => {
+    try { return localStorage.getItem("kt-show-frequency-spectrum") === "true"; } catch { return false; }
+  });
+  const [showLiveWaveform, setShowLiveWaveform] = useState(() => {
+    try { return localStorage.getItem("kt-show-live-waveform") !== "false"; } catch { return true; }
+  });
+  const [showStabilityGauges, setShowStabilityGauges] = useState(() => {
+    try { return localStorage.getItem("kt-show-stability-gauges") !== "false"; } catch { return true; }
+  });
+  const [showOrientationMesh, setShowOrientationMesh] = useState(() => {
+    try { return localStorage.getItem("kt-show-orientation-mesh") !== "false"; } catch { return true; }
+  });
 
-  const [telemetryPool, setTelemetryPool] = useState<TelemetryFrame[]>(factoryDataset);
+  const [telemetryPool, setTelemetryPool] = useState<TelemetryFrame[]>(() => {
+    try {
+      const stored = localStorage.getItem("kt-telemetry-pool");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0 && 'magnitude' in parsed[0]) {
+          return parsed;
+        }
+      }
+    } catch { }
+    return factoryDataset;
+  });
   const [selectedFrameIndex, setSelectedFrameIndex] = useState<number>(0);
 
   const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
@@ -458,11 +507,9 @@ function AnalyzerDashboard() {
     if (data.length === 0) return;
     setIsAnalyzing(true); setApiError(null); setPredictionResult(null);
     try {
-      // Use evenly spaced sample of data (respects the signal shape)
       const sample = data.length > 500
         ? data.filter((_, i) => i % Math.max(1, Math.floor(data.length / 500)) === 0).slice(0, 500)
         : data;
-      // Only send raw sensor columns - don't include magnitude as it's not in the backend schema
       const headers = "timestamp_ms,ax,ay,az,gx,gy,gz";
       const rows = sample.map(obj => `${obj.timestamp_ms},${obj.ax.toFixed(6)},${obj.ay.toFixed(6)},${obj.az.toFixed(6)},${obj.gx.toFixed(6)},${obj.gy.toFixed(6)},${obj.gz.toFixed(6)}`).join("\n");
       const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
@@ -475,15 +522,12 @@ function AnalyzerDashboard() {
         setPredictionResult(`TUG: ${result.estimated_clinical_tug_score.toFixed(2)}s | KSI: ${rawKsi.toFixed(1)}`);
         setRealCsi(rawKsi); setRealKsi(Math.round(rawKsi));
         setRealPredictedActivity(result.predicted_activity || "");
-        // Still compute windows locally for display
         generateLocalWindows(data, true);
       } else {
-        // Backend returned 0 KSI (models not loaded) - fall back to local computation
         throw new Error("Backend KSI is 0, using local computation");
       }
     } catch (err) {
       console.error("ML Engine Error:", err);
-      // Always fall back to local computation which uses all data (not downsampled)
       generateLocalWindows(data);
     }
     finally { setIsAnalyzing(false); }
@@ -519,10 +563,50 @@ function AnalyzerDashboard() {
     const blob = new Blob([report], { type: "text/plain" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.download = `kinetrace_report_${Date.now()}.txt`; link.href = url; link.click(); URL.revokeObjectURL(url);
   };
 
-  const handleFactoryReset = () => { setTelemetryPool(factoryDataset); setSelectedFrameIndex(0); setIsPlaying(false); setCurrentPage(1); setShowFactoryResetModal(false); };
-  const handleClearData = () => { setTelemetryPool([]); setSelectedFrameIndex(0); setIsPlaying(false); setCurrentPage(1); setShowClearModal(false); };
+  const handleFactoryReset = () => {
+    setTelemetryPool(factoryDataset);
+    setSelectedFrameIndex(0);
+    setIsPlaying(false);
+    setCurrentPage(1);
+    setShowFactoryResetModal(false);
+    try {
+      localStorage.removeItem("kt-telemetry-pool");
+      localStorage.removeItem("kt-selected-window-ids");
+      localStorage.removeItem("kt-current-page");
+    } catch { }
+  };
 
-  const ModalOverlay = ({ show, onClose, title, message, confirmLabel, onConfirm, isDestructive }: { show: boolean; onClose: () => void; title: string; message: string; confirmLabel: string; onConfirm: () => void; isDestructive?: boolean; }) => {
+  const handleClearData = () => {
+    setTelemetryPool([]);
+    setSelectedFrameIndex(0);
+    setIsPlaying(false);
+    setCurrentPage(1);
+    setShowClearModal(false);
+    try { localStorage.removeItem("kt-telemetry-pool"); } catch { }
+  };
+
+  // Persist settings to localStorage
+  useEffect(() => { try { localStorage.setItem("kt-active-tab", activeTab); } catch { } }, [activeTab]);
+  useEffect(() => {
+    try { localStorage.setItem("kt-selected-window-ids", JSON.stringify(Array.from(selectedWindowIds))); } catch { }
+  }, [selectedWindowIds]);
+  useEffect(() => { try { localStorage.setItem("kt-row-limit", String(rowLimit)); } catch { } }, [rowLimit]);
+  useEffect(() => { try { localStorage.setItem("kt-noise-floor", String(noiseFloor)); } catch { } }, [noiseFloor]);
+  useEffect(() => { try { localStorage.setItem("kt-active-filter", activeFilter); } catch { } }, [activeFilter]);
+  useEffect(() => { try { localStorage.setItem("kt-playback-speed", String(playbackSpeed)); } catch { } }, [playbackSpeed]);
+  useEffect(() => { try { localStorage.setItem("kt-current-page", String(currentPage)); } catch { } }, [currentPage]);
+  useEffect(() => { try { localStorage.setItem("kt-waveform-start", String(waveformStart)); localStorage.setItem("kt-waveform-start-input", waveformStartInput); } catch { } }, [waveformStart, waveformStartInput]);
+  useEffect(() => { try { localStorage.setItem("kt-waveform-end", String(waveformEnd)); localStorage.setItem("kt-waveform-end-input", waveformEndInput); } catch { } }, [waveformEnd, waveformEndInput]);
+  useEffect(() => { try { localStorage.setItem("kt-show-histogram", String(showHistogram)); } catch { } }, [showHistogram]);
+  useEffect(() => { try { localStorage.setItem("kt-show-frequency-spectrum", String(showFrequencySpectrum)); } catch { } }, [showFrequencySpectrum]);
+  useEffect(() => { try { localStorage.setItem("kt-show-live-waveform", String(showLiveWaveform)); } catch { } }, [showLiveWaveform]);
+  useEffect(() => { try { localStorage.setItem("kt-show-stability-gauges", String(showStabilityGauges)); } catch { } }, [showStabilityGauges]);
+  useEffect(() => { try { localStorage.setItem("kt-show-orientation-mesh", String(showOrientationMesh)); } catch { } }, [showOrientationMesh]);
+  useEffect(() => {
+    try { localStorage.setItem("kt-telemetry-pool", JSON.stringify(telemetryPool)); } catch { }
+  }, [telemetryPool]);
+
+  const ModalOverlay = ({ show, onClose, title, message, confirmLabel, onConfirm, isDestructive }: { show: boolean; onClose: () => void; title: string; message: string; confirmLabel: string; onConfirm: () => void; isDestructive?: boolean }) => {
     if (!show) return null;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
@@ -811,19 +895,16 @@ function AnalyzerDashboard() {
                     <div className="p-6 space-y-4">
                       {filteredWindows.length > 0 ? (
                         <>
-                          {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average CSI</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? Math.round(filteredWindows.reduce((a, w) => a + w.csi, 0) / filteredWindows.length) : 0}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average KSI</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? Math.round(filteredWindows.reduce((a, w) => a + w.ksi, 0) / filteredWindows.length) : 0}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Top Activity</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? (() => { const counts = new Map<string, number>(); filteredWindows.forEach(w => counts.set(w.activity, (counts.get(w.activity) || 0) + 1)); return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"; })() : "N/A"}</div></div>
                           </div>
-                          {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Windows</div><div className="mt-1 text-lg font-display">{filteredWindows.length}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Total Energy</div><div className="mt-1 text-lg font-display">{summaryStats.totalEnergy}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Peak Jerk</div><div className="mt-1 text-lg font-display">{summaryStats.maxJerk} m/s³</div></div>
                           </div>
-                          {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Optimal</div><div className="mt-1 text-lg font-display text-emerald-500">{filteredWindows.filter(w => w.stabilityState === "Optimal").length}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Degraded</div><div className="mt-1 text-lg font-display text-yellow-500">{filteredWindows.filter(w => w.stabilityState === "Degraded").length}</div></div>

@@ -86,6 +86,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "google-site-verification", content: "g__gNiqRE1GUOb3QlizlGAih3G3P5sOYo_pRUqp0K3E" },
+      { name: "keywords", content: "KineTrace, KSI, stability index, accelerometer analysis, gait tracking, fall risk assessment" },
+      { property: "og:url", content: "https://kinetrace.netlify.app/" },
+      { property: "og:image", content: "https://kinetrace.netlify.app/og-image.png" },
+      { name: "twitter:title", content: "KineTrace — Movement & Stability Analytics" },
+      { name: "twitter:description", content: "Orientation-invariant signal processing + Random Forest classification, distilled into a single clinical stability score." },
+      { name: "twitter:image", content: "https://kinetrace.netlify.app/og-image.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
