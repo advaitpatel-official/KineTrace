@@ -106,6 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css",
       },
+      { rel: "canonical", href: "https://kinetrace.netlify.app/" },
     ],
 
   }),
@@ -116,6 +117,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // SEO Structured Data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "KineTrace",
+    "operatingSystem": "Web Browser",
+    "applicationCategory": "HealthApplication",
+    "description": "Signal-processing and machine learning pipeline quantifying human movement stability and fall risk from tri-axial wearable sensor data.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "KineTrace"
+    }
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -124,6 +144,11 @@ function RootShell({ children }: { children: ReactNode }) {
             __html:
               "try{history.scrollRestoration='manual';var t=localStorage.getItem('kt-theme');if(t!=='dark'&&t!=='light'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}",
           }}
+        />
+        {/* Inject JSON-LD Script for Google Rich Snippets */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <HeadContent />
       </head>
@@ -134,7 +159,6 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
