@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { StickyNav } from "@/components/StickyNav";
+import { Footer } from "@/components/Footer";
 
 export const Route = createFileRoute("/analyzer/")({
   component: AnalyzerDashboard,
+  head: () => ({
+    meta: [
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
 });
 
 type TelemetryFrame = {
@@ -12,7 +18,7 @@ type TelemetryFrame = {
 };
 
 type WindowMetric = {
-  id: string; timestamp: string;
+  id: string; timestamp: string; startIdx: number; endIdx: number;
   activity: "Walking" | "Stairs Up" | "Stairs Down" | "Standing" | "Sitting";
   csi: number; ksi: number; jerk: number; variance: number; stabilityState: "Optimal" | "Degraded" | "Critical";
 };
@@ -46,6 +52,7 @@ const factoryDataset: TelemetryFrame[] = (() => {
 
 function AnalyzerDashboard() {
   const [activeTab, setActiveTab] = useState<"stream" | "windows" | "analytics">("stream");
+  const [selectedWindowIds, setSelectedWindowIds] = useState<Set<string>>(new Set());
   const [rowLimit, setRowLimit] = useState<number>(50);
   const [noiseFloor, setNoiseFloor] = useState<number>(0.15);
   const [activeFilter, setActiveFilter] = useState("Butterworth lowpass");
@@ -90,7 +97,19 @@ function AnalyzerDashboard() {
   const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [showMobileWarning, setShowMobileWarning] = useState(false);
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("kt-disclaimer-accepted");
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("kt-disclaimer-accepted", String(disclaimerAccepted));
+    } catch { }
+  }, [disclaimerAccepted]);
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
   const [disclaimerCheckbox, setDisclaimerCheckbox] = useState(false);
 
@@ -109,6 +128,7 @@ function AnalyzerDashboard() {
     "Savitzky-Golay",
     "Wavelet denoise"
   ];
+  const activities = ["All", "Walking", "Stairs Up", "Stairs Down", "Standing", "Sitting"] as const;
   const speedOptions = [0.25, 0.5, 1, 2, 4, 8];
 
   const requireDisclaimer = useCallback((action: () => void) => {
@@ -126,7 +146,6 @@ function AnalyzerDashboard() {
     }
   }, []);
 
-  // Close filter dropdown on click outside
   useEffect(() => {
     if (!isDropdownOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -138,7 +157,6 @@ function AnalyzerDashboard() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isDropdownOpen]);
 
-  // Close speed dropdown on click outside
   useEffect(() => {
     if (!isSpeedDropdownOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -156,7 +174,6 @@ function AnalyzerDashboard() {
     if (rowLimit > maxAvailableRows) setRowLimit(maxAvailableRows);
   }, [maxAvailableRows, rowLimit]);
 
-  // ML status banner: show when waking (yellow) or offline (red), debounce hide to prevent flicker
   useEffect(() => {
     if (mlWaking) {
       setMlWarningType("waking");
@@ -170,7 +187,6 @@ function AnalyzerDashboard() {
     return () => clearTimeout(timer);
   }, [mlWaking, mlOnline]);
 
-  // Warm up the free-tier Render backend on page load + periodic health checks
   useEffect(() => {
     let cancelled = false;
     const wakeUp = async () => {
@@ -188,9 +204,7 @@ function AnalyzerDashboard() {
             return;
           }
         } catch {
-          // server still spinning up, wait and retry
         }
-        // Wait 3s between retries (total ~36s max)
         await new Promise(r => setTimeout(r, 3000));
       }
       if (!cancelled) setMlWaking(false);
@@ -221,12 +235,23 @@ function AnalyzerDashboard() {
 
   const processedData = useMemo(() => telemetryPool.filter(f => f.magnitude >= noiseFloor), [telemetryPool, noiseFloor]);
 
+  const filteredData = useMemo(() => {
+    if (selectedWindowIds.size === 0) return processedData;
+    const allowed = new Set<number>();
+    computedWindows.forEach(w => {
+      if (selectedWindowIds.has(w.id)) {
+        for (let i = w.startIdx; i < w.endIdx; i++) allowed.add(i);
+      }
+    });
+    return processedData.filter((_, i) => allowed.has(i));
+  }, [processedData, computedWindows, selectedWindowIds]);
+
   const waveformData = useMemo(() => {
-    if (processedData.length === 0) return [];
-    const start = Math.max(0, Math.min(waveformStart, processedData.length - 1));
-    const end = Math.max(start + 1, Math.min(waveformEnd, processedData.length));
-    return processedData.slice(start, end);
-  }, [processedData, waveformStart, waveformEnd]);
+    if (filteredData.length === 0) return [];
+    const start = Math.max(0, Math.min(waveformStart, filteredData.length - 1));
+    const end = Math.max(start + 1, Math.min(waveformEnd, filteredData.length));
+    return filteredData.slice(start, end);
+  }, [filteredData, waveformStart, waveformEnd]);
 
   useEffect(() => {
     if (processedData.length > 0) {
@@ -243,15 +268,20 @@ function AnalyzerDashboard() {
     }
   }, [telemetryPool, noiseFloor]);
 
+  const filteredWindows = useMemo(() => {
+    if (selectedWindowIds.size === 0) return computedWindows;
+    return computedWindows.filter(w => selectedWindowIds.has(w.id));
+  }, [computedWindows, selectedWindowIds]);
+
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * rowLimit;
-    return processedData.slice(start, start + rowLimit);
-  }, [processedData, currentPage, rowLimit]);
+    return filteredData.slice(start, start + rowLimit);
+  }, [filteredData, currentPage, rowLimit]);
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(processedData.length / rowLimit)), [processedData, rowLimit]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredData.length / rowLimit)), [filteredData, rowLimit]);
 
   useEffect(() => { if (currentPage > totalPages) setCurrentPage(totalPages); }, [currentPage, totalPages]);
-  useEffect(() => { if (selectedFrameIndex >= processedData.length && processedData.length > 0) setSelectedFrameIndex(processedData.length - 1); }, [processedData, selectedFrameIndex]);
+  useEffect(() => { if (selectedFrameIndex >= filteredData.length && filteredData.length > 0) setSelectedFrameIndex(filteredData.length - 1); }, [filteredData, selectedFrameIndex]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -268,21 +298,22 @@ function AnalyzerDashboard() {
   }, [isPlaying, waveformData.length, playbackSpeed]);
 
   const currentFrame = useMemo(() => {
-    return waveformData[selectedFrameIndex] || processedData[selectedFrameIndex] || { ax: 0, ay: 1, az: 0, gx: 0, gy: 0, gz: 0, magnitude: 1 };
-  }, [waveformData, processedData, selectedFrameIndex]);
+    return waveformData[selectedFrameIndex] || filteredData[selectedFrameIndex] || processedData[selectedFrameIndex] || { ax: 0, ay: 1, az: 0, gx: 0, gy: 0, gz: 0, magnitude: 1 };
+  }, [waveformData, filteredData, processedData, selectedFrameIndex]);
 
   const summaryStats = useMemo(() => {
-    if (!processedData.length) return { avgCsi: 0, avgKsi: 0, maxJerk: 0, signalVariance: 0, peakAccel: 0, totalEnergy: 0, zeroCrossRate: 0, riskLevel: "Unknown" as string };
+    const data = filteredData.length > 0 ? filteredData : processedData;
+    if (!data.length) return { avgCsi: 0, avgKsi: 0, maxJerk: 0, signalVariance: 0, peakAccel: 0, totalEnergy: 0, zeroCrossRate: 0, riskLevel: "Unknown" as string };
 
-    const jerkValues = processedData.map((_, i) => { if (i === 0) return 0; return Math.abs(processedData[i].magnitude - processedData[i-1].magnitude) * 50; });
+    const jerkValues = data.map((_, i) => { if (i === 0) return 0; return Math.abs(data[i].magnitude - data[i-1].magnitude) * 50; });
     const baseMaxJerk = Math.max(0.01, ...jerkValues);
-    const varianceSum = processedData.reduce((acc, f) => acc + Math.abs(f.magnitude - 1), 0);
-    const peakAccel = Math.max(...processedData.map(f => f.magnitude));
-    const totalEnergy = processedData.reduce((acc, f) => acc + f.magnitude * f.magnitude, 0);
+    const varianceSum = data.reduce((acc, f) => acc + Math.abs(f.magnitude - 1), 0);
+    const peakAccel = Math.max(...data.map(f => f.magnitude));
+    const totalEnergy = data.reduce((acc, f) => acc + f.magnitude * f.magnitude, 0);
 
     let zeroCrossings = 0;
-    for (let i = 1; i < processedData.length; i++) { if ((processedData[i-1].ax < 0 && processedData[i].ax >= 0) || (processedData[i-1].ax >= 0 && processedData[i].ax < 0)) zeroCrossings++; }
-    const zeroCrossRate = zeroCrossings / processedData.length;
+    for (let i = 1; i < data.length; i++) { if ((data[i-1].ax < 0 && data[i].ax >= 0) || (data[i-1].ax >= 0 && data[i].ax < 0)) zeroCrossings++; }
+    const zeroCrossRate = zeroCrossings / data.length;
 
     const avgCsi = realCsi > 0 ? realCsi : 0;
     const avgKsi = realKsi > 0 ? realKsi : 0;
@@ -291,11 +322,11 @@ function AnalyzerDashboard() {
     return {
       avgCsi: Math.round(avgCsi), avgKsi: Math.round(avgKsi),
       maxJerk: parseFloat((baseMaxJerk * filterModifier.jerkMultiplier).toFixed(2)),
-      signalVariance: parseFloat((Math.max(0.01, (varianceSum / processedData.length) + filterModifier.varianceShift)).toFixed(3)),
+      signalVariance: parseFloat((Math.max(0.01, (varianceSum / data.length) + filterModifier.varianceShift)).toFixed(3)),
       peakAccel: parseFloat(peakAccel.toFixed(2)), totalEnergy: parseFloat(totalEnergy.toFixed(2)),
       zeroCrossRate: parseFloat(zeroCrossRate.toFixed(3)), riskLevel
     };
-  }, [processedData, filterModifier, realCsi, realKsi]);
+  }, [filteredData, processedData, filterModifier, realCsi, realKsi]);
 
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas || waveformData.length === 0) return;
@@ -329,38 +360,38 @@ function AnalyzerDashboard() {
 
   useEffect(() => {
     if (!showHistogram) return;
-    const canvas = histogramCanvasRef.current; if (!canvas || processedData.length === 0) return;
+    const canvas = histogramCanvasRef.current; if (!canvas || filteredData.length === 0) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
     const width = rect.width, height = rect.height; ctx.clearRect(0, 0, width, height);
-    const mags = processedData.map(f => f.magnitude);
+    const mags = filteredData.map(f => f.magnitude);
     const bins = 20, min = Math.min(...mags), max = Math.max(...mags), binWidth = (max - min) / bins || 1;
     const hist = new Array(bins).fill(0);
     mags.forEach(m => { const idx = Math.min(bins - 1, Math.floor((m - min) / binWidth)); hist[idx]++; });
     const maxCount = Math.max(...hist, 1);
     ctx.fillStyle = "#3b82f6";
     hist.forEach((count, i) => { const barHeight = (count / maxCount) * height; const x = (i / bins) * width; const w = width / bins - 1; ctx.fillRect(x, height - barHeight, w, barHeight); });
-  }, [showHistogram, processedData]);
+  }, [showHistogram, filteredData]);
 
   useEffect(() => {
     if (!showFrequencySpectrum) return;
-    const canvas = spectrumCanvasRef.current; if (!canvas || processedData.length === 0) return;
+    const canvas = spectrumCanvasRef.current; if (!canvas || filteredData.length === 0) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
     const width = rect.width, height = rect.height; ctx.clearRect(0, 0, width, height);
-    const data = processedData.slice(0, 256).map(f => f.magnitude); const n = data.length;
+    const data = filteredData.slice(0, 256).map(f => f.magnitude); const n = data.length;
     const spectrum = new Float64Array(n);
     for (let k = 0; k < n; k++) { let real = 0, imag = 0; for (let t = 0; t < n; t++) { const angle = (2 * Math.PI * k * t) / n; real += data[t] * Math.cos(angle); imag -= data[t] * Math.sin(angle); } spectrum[k] = Math.sqrt(real * real + imag * imag) / n; }
     const maxAmp = Math.max(...spectrum.slice(1, n/2), 0.001);
     ctx.fillStyle = "#10b981";
     for (let i = 1; i < n / 2; i++) { const x = ((i - 1) / (n / 2 - 1)) * width; const barHeight = (spectrum[i] / maxAmp) * height; ctx.fillRect(x, height - barHeight, Math.max(1, width / (n / 2)), barHeight); }
-  }, [showFrequencySpectrum, processedData]);
+  }, [showFrequencySpectrum, filteredData]);
 
   const triggerFilePicker = () => fileInputRef.current?.click();
 
@@ -417,7 +448,7 @@ function AnalyzerDashboard() {
       const state: WindowMetric["stabilityState"] = ksi > 75 ? "Optimal" : ksi > 40 ? "Degraded" : "Critical";
       let activity: WindowMetric["activity"];
       if (std < 0.03) activity = "Sitting"; else if (std < 0.06) activity = "Standing"; else if (std > 0.18) activity = "Stairs Up"; else if (std > 0.12) activity = "Stairs Down"; else activity = "Walking";
-      localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
+      localWindows.push({ id: `W-${(i + 1).toString().padStart(3, '0')}`, timestamp: `00:${((end * 20) / 1000).toFixed(2)}`, startIdx: Math.floor(i), endIdx: Math.floor(end), activity, csi, ksi, jerk: parseFloat(meanJerk.toFixed(3)), variance: parseFloat((std * std).toFixed(3)), stabilityState: state });
     }
     setComputedWindows(localWindows);
     if (localWindows.length > 0) { const avgCsi = Math.round(localWindows.reduce((a, w) => a + w.csi, 0) / localWindows.length); const avgKsi = Math.round(localWindows.reduce((a, w) => a + w.ksi, 0) / localWindows.length); if (!skipLabelOverride) { setRealCsi(avgCsi); setRealKsi(avgKsi); setPredictionResult(`CSI: ${avgCsi} | KSI: ${avgKsi} (computed locally)`); } }
@@ -525,8 +556,8 @@ function AnalyzerDashboard() {
               </p>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <a href="/src/assets/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
-              <a href="/src/assets/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
+              <a href="/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
+              <a href="/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
             </div>
             <label className="mt-4 flex items-start gap-3 font-mono text-[11px] text-muted-foreground cursor-pointer">
               <input
@@ -637,7 +668,6 @@ function AnalyzerDashboard() {
                 <p className="text-[11px] text-muted-foreground leading-relaxed">Use this template to collect sensor data. Match the column format exactly for successful ingestion.</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => requireDisclaimer(downloadDataTemplate)} className="flex-1 rounded-lg border border-hairline px-3 py-2 font-mono text-[10px] text-foreground hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-filetype-csv mr-1" /> Download Template</button>
-                  <button type="button" onClick={() => requireDisclaimer(async () => { try { const res = await fetch("https://kinetrace.onrender.com/api/export/csv"); if (res.ok) { const blob = await res.blob(); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "kinetrace_sample_data.csv"; link.click(); URL.revokeObjectURL(url); } } catch { downloadDataTemplate(); } })} className="flex-1 rounded-lg border border-hairline px-3 py-2 font-mono text-[10px] text-foreground hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-database mr-1" /> Get Sample</button>
                 </div>
                 <div className="bg-foreground/2 rounded-lg p-3 font-mono text-[9px] text-muted-foreground leading-relaxed"><div className="font-medium mb-1">Expected CSV format:</div><code className="block">timestamp_ms,ax,ay,az,gx,gy,gz</code><code className="block">0,0.120,0.940,-0.050,0.020,-0.010,0.040</code></div>
               </div>
@@ -656,7 +686,7 @@ function AnalyzerDashboard() {
               </div>
               <div className="border-t border-hairline pt-4 relative" ref={dropdownRef}><h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Signal Processor</h4>
                 <button type="button" onClick={() => requireDisclaimer(() => setIsDropdownOpen(!isDropdownOpen))} className="w-full bg-background border border-hairline rounded-lg px-3 py-2 font-mono text-xs text-foreground flex justify-between items-center text-left transition-colors hover:bg-foreground/2"><span>{activeFilter}</span><i className={`bi bi-chevron-down text-[10px] transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} /></button>
-                {isDropdownOpen && (<div className="mt-1 bg-background border border-hairline rounded-lg z-30 overflow-hidden shadow-none">{filterOptions.map((opt) => (<button key={opt} type="button" onClick={() => { requireDisclaimer(() => { setActiveFilter(opt); setIsDropdownOpen(false); }); }} className={`w-full text-left px-3 py-2 font-mono text-xs transition-colors hover:bg-foreground/4 block ${activeFilter === opt ? "bg-foreground/5 font-medium text-foreground" : "text-foreground/70"}`}>{opt}</button>))}</div>)}
+                {isDropdownOpen && (<div className="absolute left-0 right-0 mt-1 bg-background border border-hairline rounded-lg z-50 shadow-xl">{filterOptions.map((opt) => (<button key={opt} type="button" onClick={() => { requireDisclaimer(() => { setActiveFilter(opt); setIsDropdownOpen(false); }); }} className={`w-full text-left px-3 py-2 font-mono text-xs transition-colors hover:bg-foreground/4 block ${activeFilter === opt ? "bg-foreground/5 font-medium text-foreground" : "text-foreground/70"}`}>{opt}</button>))}</div>)}
                 <div className="mt-2 text-[9px] font-mono text-muted-foreground italic">{filterModifier.description}</div>
               </div>
             </div>
@@ -675,16 +705,15 @@ function AnalyzerDashboard() {
               <div className="flex h-full min-h-112.5 flex-col items-center justify-center rounded-2xl border border-dashed border-hairline p-8 text-center bg-background/10"><i className="bi bi-database-exclamation text-xl text-muted-foreground mb-2" /><h3 className="font-display text-base">Workspace database is completely empty</h3><p className="mt-1 max-w-xs text-xs text-muted-foreground leading-relaxed">Upload metrics packets or hit Factory Baseline to populate tracking views.</p></div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
                   <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Current Stability{realCsi > 0 && <span className="ml-1 text-emerald-500">●</span>}</div><div className="mt-1 text-xl font-display">{summaryStats.avgCsi} CSI</div></div>
                   <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Predictive Risk</div><div className="mt-1 text-xl font-display">{summaryStats.avgKsi} KSI</div></div>
                   <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Risk Level</div><div className="mt-1"><span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium ${getRiskBadge(summaryStats.riskLevel)}`}>{summaryStats.riskLevel}</span></div></div>
                   <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Peak Jerk</div><div className="mt-1 text-xl font-display">{summaryStats.maxJerk} m/s³</div></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  <div className="rounded-xl border border-hairline p-3 font-mono bg-background/5"><div className="text-[8px] text-muted-foreground uppercase tracking-wider">Active Slice</div><div className="mt-1 text-sm font-display">{paginatedData.length} / {processedData.length}</div></div>
-                  <div className="rounded-xl border border-hairline p-3 font-mono bg-background/5"><div className="text-[8px] text-muted-foreground uppercase tracking-wider">Peak Accel</div><div className="mt-1 text-sm font-display">{summaryStats.peakAccel} g</div></div>
-                  <div className="rounded-xl border border-hairline p-3 font-mono bg-background/5"><div className="text-[8px] text-muted-foreground uppercase tracking-wider">Filter</div><div className="mt-1 text-sm font-display">{filterModifier.label}</div></div>
+                  <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Variance</div><div className="mt-1 text-xl font-display">{summaryStats.signalVariance}</div></div>
+                  <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Active Slice</div><div className="mt-1 text-xl font-display">{paginatedData.length} / {processedData.length}</div></div>
+                  <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Peak Accel</div><div className="mt-1 text-xl font-display">{summaryStats.peakAccel} g</div></div>
+                  <div className="rounded-xl border border-hairline p-4 font-mono bg-background/10"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Filter</div><div className="mt-1 text-xl font-display">{filterModifier.label}</div></div>
                 </div>
 
                 {showLiveWaveform && <div className="rounded-xl border border-hairline p-4 bg-background/30">
@@ -750,6 +779,11 @@ function AnalyzerDashboard() {
                   <button type="button" onClick={() => requireDisclaimer(() => setActiveTab("windows"))} className={`pb-2 shrink-0 transition-colors ${activeTab === "windows" ? "text-foreground border-b border-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}>Analytics</button>
                   <button type="button" onClick={() => requireDisclaimer(() => setActiveTab("analytics"))} className={`pb-2 shrink-0 transition-colors ${activeTab === "analytics" ? "text-foreground border-b border-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}>Summary</button>
                 </div>
+                <div className="mt-3 flex items-center gap-2 font-mono text-[10px]">
+                  <span className="text-muted-foreground">Selected Windows:</span>
+                  <span className="text-foreground">{selectedWindowIds.size === 0 ? "All" : selectedWindowIds.size}</span>
+                  {selectedWindowIds.size > 0 && <button type="button" onClick={() => requireDisclaimer(() => { setSelectedWindowIds(new Set()); setCurrentPage(1); })} className="text-muted-foreground hover:text-foreground transition-colors">Reset</button>}
+                </div>
 
                 <div className="overflow-x-auto rounded-xl border border-hairline bg-background/20">
                   {activeTab === "stream" && (
@@ -762,37 +796,42 @@ function AnalyzerDashboard() {
                     <div>
                       {computedWindows.length === 0 ? (<div className="p-8 text-center text-xs text-muted-foreground font-mono">{isAnalyzing ? "Computing window metrics..." : "No window data available."}</div>) : (
                         <table className="w-full text-left font-mono text-[11px] tabular-nums">
-                          <thead><tr className="border-b border-hairline bg-foreground/1 text-muted-foreground uppercase text-[9px]"><th className="px-4 py-2">Window</th><th className="px-4 py-2">Time</th><th className="px-4 py-2">Activity</th><th className="px-4 py-2">CSI</th><th className="px-4 py-2">KSI</th><th className="px-4 py-2">Jerk</th><th className="px-4 py-2">Variance</th><th className="px-4 py-2">State</th></tr></thead>
-                          <tbody className="divide-y divide-hairline">{computedWindows.map((w) => (<tr key={w.id} className="hover:bg-foreground/1"><td className="px-4 py-2 text-muted-foreground">{w.id}</td><td className="px-4 py-2">{w.timestamp}</td><td className="px-4 py-2">{w.activity}</td><td className="px-4 py-2 font-medium">{w.csi}</td><td className="px-4 py-2">{w.ksi}</td><td className="px-4 py-2">{w.jerk.toFixed(3)}</td><td className="px-4 py-2">{w.variance.toFixed(3)}</td><td className="px-4 py-2"><span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-medium ${w.stabilityState === "Optimal" ? "bg-emerald-500/10 text-emerald-500" : w.stabilityState === "Degraded" ? "bg-yellow-500/10 text-yellow-500" : "bg-red-500/10 text-red-500"}`}>{w.stabilityState}</span></td></tr>))}</tbody>
+                          <thead><tr className="border-b border-hairline bg-foreground/1 text-muted-foreground uppercase text-[9px]"><th className="px-4 py-2 w-8">#</th><th className="px-4 py-2">Window</th><th className="px-4 py-2">Time</th><th className="px-4 py-2">Activity</th><th className="px-4 py-2">CSI</th><th className="px-4 py-2">KSI</th><th className="px-4 py-2">Jerk</th><th className="px-4 py-2">Variance</th><th className="px-4 py-2">State</th></tr></thead>
+                          <tbody className="divide-y divide-hairline">{computedWindows.map((w) => {
+                            const selected = selectedWindowIds.has(w.id);
+                            return (
+                              <tr key={w.id} onClick={() => requireDisclaimer(() => { setSelectedWindowIds(prev => { const next = new Set(prev); if (next.has(w.id)) next.delete(w.id); else next.add(w.id); return next; }); })} className={`cursor-pointer transition-colors ${selected ? "bg-foreground/4" : "hover:bg-foreground/1"}`}><td className="px-4 py-2 text-center"><span className={`inline-flex items-center justify-center w-3 h-3 rounded-full ${selected ? "bg-foreground" : "border border-muted-foreground/40"}`} /></td><td className="px-4 py-2 text-muted-foreground">{w.id}</td><td className="px-4 py-2">{w.timestamp}</td><td className="px-4 py-2">{w.activity}</td><td className="px-4 py-2 font-medium">{w.csi}</td><td className="px-4 py-2">{w.ksi}</td><td className="px-4 py-2">{w.jerk.toFixed(3)}</td><td className="px-4 py-2">{w.variance.toFixed(3)}</td><td className="px-4 py-2"><span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-medium ${w.stabilityState === "Optimal" ? "bg-emerald-500/10 text-emerald-500" : w.stabilityState === "Degraded" ? "bg-yellow-500/10 text-yellow-500" : "bg-red-500/10 text-red-500"}`}>{w.stabilityState}</span></td></tr>
+                            );
+                          })}</tbody>
                         </table>
                       )}
                     </div>
                   )}
                   {activeTab === "analytics" && (
                     <div className="p-6 space-y-4">
-                      {computedWindows.length > 0 ? (
+                      {filteredWindows.length > 0 ? (
                         <>
                           {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average CSI</div><div className="mt-1 text-lg font-display">{Math.round(computedWindows.reduce((a, w) => a + w.csi, 0) / computedWindows.length)}</div></div>
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average KSI</div><div className="mt-1 text-lg font-display">{Math.round(computedWindows.reduce((a, w) => a + w.ksi, 0) / computedWindows.length)}</div></div>
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Top Activity</div><div className="mt-1 text-lg font-display">{computedWindows.length > 0 ? computedWindows.sort((a, b) => computedWindows.filter(w => w.activity === b.activity).length - computedWindows.filter(w => w.activity === a.activity).length)[0]?.activity || "N/A" : "N/A"}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average CSI</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? Math.round(filteredWindows.reduce((a, w) => a + w.csi, 0) / filteredWindows.length) : 0}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Average KSI</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? Math.round(filteredWindows.reduce((a, w) => a + w.ksi, 0) / filteredWindows.length) : 0}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Top Activity</div><div className="mt-1 text-lg font-display">{filteredWindows.length > 0 ? (() => { const counts = new Map<string, number>(); filteredWindows.forEach(w => counts.set(w.activity, (counts.get(w.activity) || 0) + 1)); return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"; })() : "N/A"}</div></div>
                           </div>
                           {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Windows</div><div className="mt-1 text-lg font-display">{computedWindows.length}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Windows</div><div className="mt-1 text-lg font-display">{filteredWindows.length}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Total Energy</div><div className="mt-1 text-lg font-display">{summaryStats.totalEnergy}</div></div>
                             <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Peak Jerk</div><div className="mt-1 text-lg font-display">{summaryStats.maxJerk} m/s³</div></div>
                           </div>
                           {  }
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Optimal</div><div className="mt-1 text-lg font-display text-emerald-500">{computedWindows.filter(w => w.stabilityState === "Optimal").length}</div></div>
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Degraded</div><div className="mt-1 text-lg font-display text-yellow-500">{computedWindows.filter(w => w.stabilityState === "Degraded").length}</div></div>
-                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Critical</div><div className="mt-1 text-lg font-display text-red-500">{computedWindows.filter(w => w.stabilityState === "Critical").length}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Optimal</div><div className="mt-1 text-lg font-display text-emerald-500">{filteredWindows.filter(w => w.stabilityState === "Optimal").length}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Degraded</div><div className="mt-1 text-lg font-display text-yellow-500">{filteredWindows.filter(w => w.stabilityState === "Degraded").length}</div></div>
+                            <div className="rounded-lg border border-hairline p-3 font-mono"><div className="text-[9px] text-muted-foreground uppercase tracking-wider">Critical</div><div className="mt-1 text-lg font-display text-red-500">{filteredWindows.filter(w => w.stabilityState === "Critical").length}</div></div>
                           </div>
                           <div className="mt-4 bg-foreground/2 rounded-lg p-3 font-mono text-[10px] text-muted-foreground leading-relaxed">
                             <p className="font-medium text-foreground">Summary</p>
-                            <p className="mt-1">Analysis of {computedWindows.length} windows across {processedData.length} frames ({processedData.length * 20 / 1000}s of data at 50Hz). Current Stability (CSI): {summaryStats.avgCsi}. Predictive Risk (KSI): {summaryStats.avgKsi} — {summaryStats.riskLevel} risk.{realPredictedActivity && ` Predominant activity: ${realPredictedActivity}.`} Signal processed with <strong>{activeFilter}</strong> filter.</p>
+                            <p className="mt-1">Analysis of {filteredWindows.length} windows across {filteredData.length} frames ({filteredData.length * 20 / 1000}s of data at 50Hz). Current Stability (CSI): {summaryStats.avgCsi}. Predictive Risk (KSI): {summaryStats.avgKsi} — {summaryStats.riskLevel} risk.{realPredictedActivity && ` Predominant activity: ${realPredictedActivity}.`} Signal processed with <strong>{activeFilter}</strong> filter.</p>
                           </div>
                         </>
                       ) : (<div className="p-8 text-center text-xs text-muted-foreground font-mono">Summary view — load telemetry data to see analytics breakdown.</div>)}
@@ -805,60 +844,7 @@ function AnalyzerDashboard() {
         </div>
       </main>
 
-      <div className="px-6 md:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="mt-16 hairline-t py-6 text-xs text-muted-foreground leading-relaxed space-y-3">
-            <p className="font-semibold text-foreground">Medical & Physical Activity Disclaimer</p>
-            <p>
-              KineTrace is an experimental software demonstration tool and is <strong>NOT</strong> a medical device, diagnostic tool, or healthcare service. The movement analyses, predictions, and metrics provided by KineTrace are for informational and research purposes only and do not constitute medical, biomechanical, or physical therapy advice.
-            </p>
-            <p>
-              By using this application or participating in data collection, you acknowledge that engaging in physical activities (including walking, running, jumping, or climbing stairs) carries inherent risk of physical injury. You voluntarily assume all risks associated with performing these movements and agree that KineTrace and its operators shall not be liable for any injuries, damages, or claims arising from your use of the software or participation in trial activities.
-            </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <a href="/src/assets/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
-              <a href="/src/assets/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
-              <a href="/src/assets/files/LICENSE.md" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-earmark-text" /> License</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer className="px-6 pb-6 md:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-md text-xs text-muted-foreground">
-              © KineTrace {new Date().getFullYear()}. Research prototype.
-              <br />
-              Built on blended UCI HAR + MotionSense datasets.
-            </div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:text-right">
-              v0.1 · prototype
-            </div>
-          </div>
-          <svg
-            aria-hidden
-            viewBox="0 0 1000 220"
-            preserveAspectRatio="xMidYMid meet"
-            className="mt-8 block w-full select-none"
-          >
-            <text
-              x="500"
-              y="180"
-              textAnchor="middle"
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              fontFamily="Inter, sans-serif"
-              fontWeight={600}
-              fontSize={220}
-              letterSpacing="-8"
-              fill="currentColor"
-            >
-              kinetrace
-            </text>
-          </svg>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

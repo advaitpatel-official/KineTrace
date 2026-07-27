@@ -2,21 +2,27 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { StickyNav } from "@/components/StickyNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Footer } from "@/components/Footer";
 
 export const Route = createFileRoute("/documentation")({
   component: Documentation,
+  head: () => ({
+    meta: [
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
 });
 
 type DocPage = {
   id: string; title: string; eyebrow: string; summary: string; icon: string;
-  body: Array<{ heading: string; copy: string[]; codeBlock?: string }>;
+  body: Array<{ heading: string; copy: string[]; codeBlock?: string; button?: { label: string; href: string; icon?: string } }>;
 };
 
 type DocGroup = { id: string; title: string; icon: string; pages: DocPage[]; };
 
 const homePage: DocPage = {
   id: "docs-home",
-  title: "KineTrace User Guide",
+  title: "Home",
   eyebrow: "Getting Started",
   summary: "Everything you need to know to use KineTrace — from loading your first file to understanding your stability scores.",
   icon: "bi-shield-check",
@@ -27,22 +33,17 @@ const homePage: DocPage = {
         "KineTrace is a tool that analyzes movement data from phones, smartwatches, or wearable sensors and gives you a simple stability score. It's designed for researchers, clinicians, or anyone who wants to measure how steady or unsteady someone's movement is.",
         "You upload a recording of someone walking, standing, or moving (captured by any device with an accelerometer). KineTrace looks at tiny details in the movement that are invisible to the human eye and produces a score from 0 (very unsteady) to 100 (very steady).",
         "The project is built on two public research datasets — UCI HAR and MotionSense — which gives it a strong foundation for analyzing movement from different types of devices.",
+        "KineTrace processes data in 2.56-second windows (50 frames at 50 Hz), computing jerk and variance for each window. These values feed into the KSI formula, which produces a score that correlates with movement stability. The system also classifies the type of movement (walking, sitting, standing, stairs) using a trained Random Forest classifier.",
       ],
     },
     {
-      heading: "Learn More",
+      heading: "CSI vs. KSI — Two Scores, One Purpose",
       copy: [
-        "KineTrace is open source for non-commercial use — the license is available on GitHub and in the footer. Want to dive deeper into the development? Read the original project overview here.",
-      ],
-    },
-    {
-      heading: "Quick Start — Try It in 30 Seconds",
-      copy: [
-        "1. Go to the Analyzer page (click 'Open the app' on the home page).",
-        "2. The analyzer loads example data automatically — you can explore it right away.",
-        "3. Upload your own data by clicking the 'Import sensor capture logs' box. Pick a CSV, TXT, or JSON file from your computer.",
-        "4. Use the controls on the left to adjust how many rows to show, filter out noise, or pick a signal processing filter.",
-        "5. View your results across three tabs: Log (raw numbers), Analytics (scores per window), and Summary (overall stats).",
+        "KineTrace actually shows you two related scores:",
+        "CSI (Current Stability Index) — This measures how stable your movement is right now. It's the real-time score based on the current data.",
+        "KSI (KineTrace Stability Index) — This is a predictive score. It looks at how erratic your movement patterns are and adjusts the CSI downward if it detects signs that risk is increasing. A person might be walking smoothly right now (high CSI), but if their movement shows subtle signs of instability, the KSI will be lower — an early warning.",
+        "Think of it like this: CSI is how you're moving today. KSI is where you're heading tomorrow.",
+        "Both scores are calculated from the same underlying metrics — jerk (the rate of change of acceleration) and variance (the spread of acceleration values). The difference is that KSI applies a penalty factor based on the variability of movement patterns across windows, making it more sensitive to emerging instability that hasn't yet affected the current movement quality.",
       ],
     },
     {
@@ -53,15 +54,6 @@ const homePage: DocPage = {
         "• 40–75 = Degraded (yellow) — some irregularity detected. Moderate risk.",
         "• 0–40 = Critical (red) — significant instability. High risk of falling.",
         "The score is calculated from two things: 'jerk' (how suddenly movement changes) and 'variance' (how much movement varies from moment to moment). Stable walking has low jerk and low variance. Shaky movement has high jerk and high variance.",
-      ],
-    },
-    {
-      heading: "CSI vs. KSI — Two Scores, One Purpose",
-      copy: [
-        "KineTrace actually shows you two related scores:",
-        "CSI (Current Stability Index) — This measures how stable your movement is right now. It's the real-time score based on the current data.",
-        "KSI (KineTrace Stability Index) — This is a predictive score. It looks at how erratic your movement patterns are and adjusts the CSI downward if it detects signs that risk is increasing. A person might be walking smoothly right now (high CSI), but if their movement shows subtle signs of instability, the KSI will be lower — an early warning.",
-        "Think of it like this: CSI is how you're moving today. KSI is where you're heading tomorrow.",
       ],
     },
   ],
@@ -139,59 +131,6 @@ const docGroups: DocGroup[] = [
               "Your file needs at least three columns: ax, ay, az (the acceleration in the X, Y, and Z directions). A timestamp_ms column (the time of each reading) is optional but helpful. Most sensor apps can export this format directly.",
             ],
           },
-          {
-            heading: "Use the Built-In Example Data",
-            copy: [
-              "The analyzer loads with ~10,500 frames of simulated movement data covering walking, sitting, standing, and stairs. You can explore this immediately without any setup. It's a great way to learn how KineTrace works before capturing your own data.",
-            ],
-          },
-          {
-            heading: "Download the Template or Sample",
-            copy: [
-              "On the analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV file with the correct column headers and example rows. Use this to format your own data correctly.",
-              "Click 'Get Sample' to download a ready-to-use 5-second sample of movement data from the server for testing.",
-            ],
-          },
-          {
-            heading: "Accepted File Formats",
-            copy: [
-              "KineTrace accepts CSV, TXT, and JSON files. The system automatically finds the right columns in your file, regardless of the order they appear. Required columns are ax, ay, az. Optional columns include timestamp_ms, gx, gy, gz, and magnitude.",
-            ],
-          },
-        ],
-      },
-      {
-        id: "upload-system",
-        title: "How Uploading Works",
-        eyebrow: "Loading Data",
-        summary: "Understand how data accumulates, when to clear the workspace, and how the factory reset works.",
-        icon: "bi-arrow-repeat",
-        body: [
-          {
-            heading: "Uploading Adds to Existing Data",
-            copy: [
-              "When you upload a file, the new data is appended to whatever is already in the workspace. It does NOT replace the existing data. If the factory dataset is loaded and you upload a file, you'll have both the factory data AND your data combined.",
-              "This allows you to layer multiple recordings together. For example: Upload File A → workspace has File A. Upload File B → workspace has File A + File B combined. Upload File C → workspace has File A + File B + File C. Data keeps accumulating until you clear it.",
-            ],
-          },
-          {
-            heading: "Clear Removes Everything",
-            copy: [
-              "The red 'Clear' button in the top toolbar wipes ALL data from the workspace, including the factory dataset. The workspace becomes completely empty and you'll see the empty state screen. After clearing, your next upload will be the only data in the workspace. This is useful when you want to start completely fresh with only your own data.",
-            ],
-          },
-          {
-            heading: "Factory Reset Restores the Defaults",
-            copy: [
-              "The 'Factory Reset' button brings back the original factory dataset (~10,500 frames of simulated movement data covering walking, sitting, standing, stairs up, and stairs down). It discards any imported files you've added. Use this when you want to go back to the built-in example data to demonstrate the tool or start a fresh exploration.",
-            ],
-          },
-          {
-            heading: "When to Use Each Option",
-            copy: [
-              "Use 'Clear' when you want a completely empty workspace to start fresh with your own data (no factory data mixed in). Use 'Factory Reset' when you want to go back to the original example data. Don't use either if you want to keep adding files — just upload and they'll merge automatically.",
-            ],
-          },
         ],
       },
     ],
@@ -243,6 +182,47 @@ const docGroups: DocGroup[] = [
             copy: [
               "The key advantage is that KineTrace works with any phone or wearable — no special equipment needed. You can record data anywhere: at home, in a clinic, at a gym, or outdoors. The score gives you an objective, repeatable measurement that's much more sensitive than watching someone move with your eyes. Subtle changes in stability that would be invisible to a human observer show up clearly in the KSI score.",
             ],
+          },
+        ],
+      },
+      {
+        id: "for-trial-holders",
+        title: "For Trial Holders",
+        eyebrow: "Use Cases",
+        summary: "Guidelines for researchers and clinicians conducting trials with KineTrace — consent, safety, and submission.",
+        icon: "bi-clipboard-check",
+        body: [
+          {
+            heading: "Conducting a Trial Safely",
+            copy: [
+              "If you are running a formal research trial or clinical study using KineTrace, participant safety and proper consent are essential. Before collecting any data, make sure every participant has signed the KineTrace Trial Collection Waiver. Keep a signed copy on file for your records.",
+              "All participants should be informed that KineTrace is a research prototype and not a medical device. They should understand that the tool does not provide medical diagnoses and that they should consult a healthcare professional for any medical concerns.",
+              "Data collection should take place in a safe environment. Participants should be supervised during physical activities. Make sure first aid is available and that participants are physically able to perform the requested movements without risk of injury.",
+            ],
+          },
+          {
+            heading: "What to Send When You're Finished",
+            copy: [
+              "When your trial is complete, email your anonymized dataset and a brief summary to advait.patel@outlook.com. Include:",
+              "• The trial name and institution.",
+              "• A short description of the study design and participant demographics.",
+              "• The exported data file(s) in CSV or JSON format.",
+              "• Any observations or findings you'd like to share.",
+              "This helps improve KineTrace and contributes to the broader research community.",
+            ],
+          },
+          {
+            heading: "Setting Up Your Own Trial",
+            copy: [
+              "If you're interested in running your own trial or collaborating on a research study, you can reach out directly at advait.patel@outlook.com to discuss trial setup, access to additional documentation, and any custom requirements for your study.",
+            ],
+          },
+          {
+            heading: "Download the Trial Waiver",
+            copy: [
+              "Before beginning any formal data collection, download and review the KineTrace Trial Collection Waiver. This document outlines the responsibilities of researchers, the consent process, and the terms under which KineTrace may be used in a study.",
+            ],
+            button: { label: "Download Trial Waiver", href: "/files/KineTrace_Trial_Collection_Waiver.pdf", icon: "bi bi-file-earmark-pdf" },
           },
         ],
       },
@@ -458,6 +438,50 @@ const docGroups: DocGroup[] = [
               "• Roll (red): Side-to-side angle, calculated from az. Positive = tilted right.",
               "• Scale (green): The total acceleration magnitude (0.6× to 1.4×).",
               "The outer ring provides orientation context. The blue dot points in the device's facing direction. Green and red lines inside show the Y and X axes. A pendulum at the bottom swings based on gyroscope data.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "window-selection",
+        title: "Window Selection & Filtering",
+        eyebrow: "Using the Analyzer",
+        summary: "Select individual windows in the Analytics tab to focus your analysis on specific time periods.",
+        icon: "bi-check2-square",
+        body: [
+          {
+            heading: "How Window Selection Works",
+            copy: [
+              "In the Analytics tab, each window row has a small circular selection control on the left, just like the frame selector in the Log tab.",
+              "Click any window row to select it. The circle fills in to indicate selection. Click again to deselect.",
+              "You can select multiple windows. The selection state is shown above the tab bar as a count.",
+            ],
+          },
+          {
+            heading: "What Gets Filtered",
+            copy: [
+              "Once you select one or more windows, the Log tab shows only the frames that fall inside those windows (between each window's startIdx and endIdx). The table paginates over only those frames.",
+              "The Analytics tab table continues showing all windows so you can keep selecting. Selected rows are visually highlighted.",
+              "Summary tab: All statistics recalculate from only the selected windows.",
+              "Waveform: Updates to show only the data from selected windows.",
+              "Stability Gauges: Recalculate based on filtered data.",
+              "Orientation Cube: Reflects the current frame from the filtered dataset.",
+              "Histogram and Frequency Spectrum: Both update to reflect the filtered dataset.",
+            ],
+          },
+          {
+            heading: "Resetting the Selection",
+            copy: [
+              "Click the Reset button that appears when windows are selected to clear the selection and return to the unfiltered view.",
+              "Resetting returns all tabs to showing the complete dataset.",
+            ],
+          },
+          {
+            heading: "Typical Use Cases",
+            copy: [
+              "Select specific windows to isolate a particular movement pattern (e.g., only the windows where the person was walking).",
+              "Compare metrics across a subset of windows without losing the context of the full recording.",
+              "Drill down from the Summary view into the Analytics view by selecting windows of interest.",
             ],
           },
         ],
@@ -873,14 +897,40 @@ function Documentation() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     importing: true, usecases: true, processing: true, analyzer: true, exporting: true, tabs: true, backend: true, devlog: true
   });
+  const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
 
   const activePage = useMemo(() => allPages.find(p => p.id === activeId) ?? homePage, [activeId]);
 
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return allPages.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.summary.toLowerCase().includes(q) ||
+      p.body.some(s => s.heading.toLowerCase().includes(q) || s.copy.some(c => c.toLowerCase().includes(q)))
+    );
+  }, [searchQuery]);
+
   const handleSidebarPageClick = (id: string) => {
     setActiveId(id);
+    window.location.hash = id;
     if (isMobile) setSidebarOpen(false);
   };
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const id = hash.replace('#', '');
+        const page = allPages.find(p => p.id === id);
+        if (page) setActiveId(id);
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -904,7 +954,7 @@ function Documentation() {
     <nav className="py-4 space-y-4">
       <button
         type="button" onClick={() => handleSidebarPageClick(homePage.id)}
-        className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors shadow-none ${
+        className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors shadow-none ${
           activeId === homePage.id ? "bg-foreground text-background" : "text-foreground/75 hover:bg-foreground/5"
         }`}
       >
@@ -945,7 +995,7 @@ function Documentation() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground shadow-none selection:bg-foreground selection:text-background">
-      <header className="flex items-center justify-between px-6 pt-8 md:px-12 md:pt-10">
+      <header className="flex items-center justify-between gap-4 px-6 pt-8 md:px-12 md:pt-10">
         <Link to="/" className="inline-flex items-center gap-2 font-mono text-xs tracking-tight hover:underline">
           <i className="bi bi-arrow-left" /> kinetrace
         </Link>
@@ -960,9 +1010,11 @@ function Documentation() {
               <i className="bi bi-list text-base" aria-hidden />
             </button>
           )}
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            Docs
-          </div>
+          {!isMobile && (
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              Docs
+            </div>
+          )}
         </div>
       </header>
 
@@ -970,8 +1022,46 @@ function Documentation() {
 
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 pt-14 pb-24 md:grid-cols-[280px_1fr] md:px-12 md:pt-20">
         {}
-        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto pr-2">
-          {sidebarNav}
+        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto pr-2 **:overflow-visible [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/15 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-background [&::-webkit-scrollbar-thumb]:hover:bg-foreground/30">
+          <div className="sticky top-0 z-10 bg-background pt-1 pb-2 -mb-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search docs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-full border border-hairline bg-background px-3 py-1 font-mono text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
+              />
+              {searchQuery && (
+              <div className="absolute top-full mt-2 left-2 w-[calc(100%-16px)] bg-background border border-hairline rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
+                  {searchResults.length === 0 ? (
+                    <div className="p-3 text-[10px] text-muted-foreground font-mono">No results found</div>
+                  ) : (
+                    <div className="divide-y divide-hairline">
+                      {searchResults.slice(0, 8).map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setSidebarOpen(false);
+                            handleSidebarPageClick(p.id);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-foreground/5 transition-colors"
+                        >
+                          <div className="text-[11px] font-medium text-foreground">{p.title}</div>
+                          <div className="text-[9px] text-muted-foreground line-clamp-1">{p.summary}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-1">
+            {sidebarNav}
+          </div>
         </aside>
 
         {}
@@ -985,8 +1075,43 @@ function Documentation() {
           <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col bg-background border-r border-hairline shadow-2xl transition-transform duration-300 ease-out ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}>
-            <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Sections</span>
+          <div className="border-b border-hairline px-4 pt-4 pb-3 space-y-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search docs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-full border border-hairline bg-background px-3 py-1 font-mono text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
+              />
+              {searchQuery && (
+                <div className="absolute top-full mt-2 left-2 w-[calc(100%-16px)] bg-background border border-hairline rounded-xl shadow-2xl max-h-64 overflow-y-auto z-50">
+                  {searchResults.length === 0 ? (
+                    <div className="p-3 text-[10px] text-muted-foreground font-mono">No results found</div>
+                  ) : (
+                    <div className="divide-y divide-hairline">
+                      {searchResults.slice(0, 8).map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setSidebarOpen(false);
+                            handleSidebarPageClick(p.id);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-foreground/5 transition-colors"
+                        >
+                          <div className="text-[11px] font-medium text-foreground">{p.title}</div>
+                          <div className="text-[9px] text-muted-foreground line-clamp-1">{p.summary}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Documentation</span>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
@@ -996,9 +1121,10 @@ function Documentation() {
                 <i className="bi bi-x text-sm" aria-hidden />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-6">
-              {sidebarNav}
-            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 pb-6">
+            {sidebarNav}
+          </div>
           </div>
         </div>
 
@@ -1021,66 +1147,23 @@ function Documentation() {
                     <code>{section.codeBlock}</code>
                   </pre>
                 )}
+                {section.button && (
+                  <a
+                    href={section.button.href}
+                    download
+                    className="inline-flex items-center gap-2 rounded-full border border-hairline px-5 py-2.5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+                  >
+                    <i className={section.button.icon} aria-hidden />
+                    {section.button.label}
+                  </a>
+                )}
               </div>
             ))}
           </div>
         </article>
       </main>
 
-      <div className="px-6 md:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="mt-16 hairline-t py-6 text-xs text-muted-foreground leading-relaxed space-y-3">
-            <p className="font-semibold text-foreground">Medical & Physical Activity Disclaimer</p>
-            <p>
-              KineTrace is an experimental software demonstration tool and is <strong>NOT</strong> a medical device, diagnostic tool, or healthcare service. The movement analyses, predictions, and metrics provided by KineTrace are for informational and research purposes only and do not constitute medical, biomechanical, or physical therapy advice.
-            </p>
-            <p>
-              By using this application or participating in data collection, you acknowledge that engaging in physical activities (including walking, running, jumping, or climbing stairs) carries inherent risk of physical injury. You voluntarily assume all risks associated with performing these movements and agree that KineTrace and its operators shall not be liable for any injuries, damages, or claims arising from your use of the software or participation in trial activities.
-            </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <a href="/src/assets/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
-              <a href="/src/assets/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
-              <a href="/src/assets/files/LICENSE.md" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-earmark-text" /> License</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer className="px-6 pb-6 md:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-md text-xs text-muted-foreground">
-              © KineTrace {new Date().getFullYear()}. Research prototype.
-              <br />
-              Built on blended UCI HAR + MotionSense datasets.
-            </div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:text-right">
-              v0.1 · prototype
-            </div>
-          </div>
-          <svg
-            aria-hidden
-            viewBox="0 0 1000 220"
-            preserveAspectRatio="xMidYMid meet"
-            className="mt-8 block w-full select-none"
-          >
-            <text
-              x="500"
-              y="180"
-              textAnchor="middle"
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              fontFamily="Inter, sans-serif"
-              fontWeight={600}
-              fontSize={220}
-              letterSpacing="-8"
-              fill="currentColor"
-            >
-              kinetrace
-            </text>
-          </svg>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

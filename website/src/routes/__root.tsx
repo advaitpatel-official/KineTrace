@@ -78,13 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "KineTrace — Clinical-grade movement stability from wearable sensors" },
+      { title: "KineTrace" },
       { name: "description", content: "KineTrace is a signal-processing and machine learning pipeline that quantifies human movement stability from tri-axial wearable sensor data, producing the KineTrace Stability Index (KSI)." },
       { name: "author", content: "KineTrace" },
-      { property: "og:title", content: "KineTrace — Movement stability, quantified" },
+      { property: "og:title", content: "KineTrace" },
       { property: "og:description", content: "Orientation-invariant signal processing + Random Forest classification, distilled into a single clinical stability score." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "g__gNiqRE1GUOb3QlizlGAih3G3P5sOYo_pRUqp0K3E" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

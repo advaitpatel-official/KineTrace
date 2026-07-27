@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { Preloader } from "@/components/Preloader";
 import { StickyNav } from "@/components/StickyNav";
 import { HeroCarousel } from "@/components/HeroCarousel";
+import { Footer } from "@/components/Footer";
+import { ContactSection } from "@/components/ContactSection";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -145,9 +147,64 @@ function Index() {
               <p>
                 <strong>It is important to note that kinetrace is a research prototype and should not be used to self diagnose, not only does this tool not have the capability to replace professional medical evaluation, it is not designed for that purpose either. At most, this tool should be used to give yourself an idea of whether you should consult a professional or not.</strong>
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground pt-2">
-                Built on UCI HAR + MotionSense datasets · Research prototype
-              </p>
+            </div>
+
+            {}
+            <div className="w-full grid grid-cols-1 gap-10 md:grid-cols-2">
+              <div className="mt-16 md:mt-0 hairline-t md:border-t-0 pt-10 flex flex-col">
+                <h3 className="font-display text-2xl md:text-3xl">Learn More</h3>
+                <div className="mt-6 space-y-4 text-base leading-relaxed text-foreground/80 flex-1">
+                  <p>
+                    KineTrace is an open-source research prototype built to explore how consumer-grade sensors — like those in phones and smartwatches — can be used to assess movement stability. The project is released under a <strong>non-commercial license</strong>, meaning you are free to use, study, and modify the code for academic or personal research purposes, but not for commercial applications.
+                  </p>
+                  <p>
+                    The full license text is available in the <a href="https://github.com/advaitpatel-official/KineTrace" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">GitHub repository</a> and in the footer below. If you are interested in collaborating or have questions about licensing, please reach out via the contact information below.
+                  </p>
+                
+                </div>
+                <div className="mt-auto pt-4">
+                  <div className="flex flex-wrap gap-4">
+                    <a
+                      href="https://github.com/advaitpatel-official/KineTrace"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-transform hover:-translate-y-0.5"
+                    >
+                      <i className="bi bi-github" aria-hidden />
+                      View on GitHub
+                    </a>
+                    <a
+                      href="/files/KineTrace_Project_Outline.pdf"
+                      download
+                      className="inline-flex items-center gap-2 rounded-full border border-hairline px-6 py-3 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+                    >
+                      <i className="bi bi-file-earmark-pdf" aria-hidden />
+                      Download Project Outline
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-16 md:mt-0 hairline-t md:border-t-0 pt-10 flex flex-col">
+                <h3 className="font-display text-2xl md:text-3xl">Contribute</h3>
+                <div className="mt-6 space-y-4 text-base leading-relaxed text-foreground/80 flex-1">
+                  <p>
+                    Interested in running KineTrace as part of a research trial or clinical study? We welcome collaboration from researchers, clinicians, and institutions.
+                  </p>
+                  <p>
+                    If you want to conduct a formal trial using KineTrace, please review the guidelines below and reach out to advait.patel@outlook.com to discuss trial setup, access to additional documentation, and any custom requirements for your study. We'll help you get everything you need to run a safe, compliant data collection. We are always glad to collaborate with anyone so please do not hesitate to reach out.
+                  </p>
+                </div>
+                <div className="mt-auto pt-4">
+                  <a
+                    href="/documentation#for-trial-holders"
+                    className="inline-flex items-center gap-2 rounded-full border border-hairline px-5 py-2.5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+                  >
+                    <i className="bi bi-clipboard-check" aria-hidden />
+                    View Trial Guidelines
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -211,23 +268,18 @@ function Index() {
         <section className="px-6 pt-32 md:px-12">
           <div className="mx-auto max-w-6xl grid grid-cols-1 gap-10 md:grid-cols-12">
             <blockquote className="md:col-span-8 font-display text-3xl leading-[1.15] md:text-4xl">
-              “We wanted a way to turn raw phone sensor data into something a doctor could actually use.
-              KSI is that number — one score that tells you if movement is steady or not.”
+              "We wanted a way to turn raw phone sensor data into something a doctor could actually use.
+              KSI is that number — one score that tells you if movement is steady or not."
             </blockquote>
-            <div className="md:col-span-4 self-end font-mono text-xs text-muted-foreground">
-              KineTrace research notes
+            <div className="md:col-span-4 self-end font-mono text-xs text-muted-foreground md:text-right">
+             - KineTrace Development Notes
             </div>
           </div>
         </section>
 
         <section id="ksi" className="scroll-mt-24 px-6 pt-32 pb-12 md:px-12 md:pb-16">
           <div className="mx-auto max-w-6xl">
-            <div className="flex items-baseline justify-between gap-4">
-              <h2 className="font-display text-4xl md:text-5xl">Try It Now</h2>
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                The Analyzer is Live
-              </span>
-            </div>
+            <h2 className="font-display text-4xl md:text-5xl">Try It Now</h2>
             <p className="mt-4 max-w-2xl text-foreground/75">
               No setup needed. Open the analyzer, upload a short movement recording from your phone or wearable, and get an instant stability score, activity classification, and full breakdown of your data.
             </p>
@@ -236,15 +288,15 @@ function Index() {
               <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
                 <div className="md:col-span-7">
                   <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    A Live Example
+                    The Analyzer is Live
                   </div>
                   <h3 className="mt-3 font-display text-3xl md:text-4xl">
                     Upload movement data, get a stability score back.
                   </h3>
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
                     <Link
                       to="/analyzer"
-                      className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-transform hover:-translate-y-0.5"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-transform hover:-translate-y-0.5"
                     >
                       <i className="bi bi-box-arrow-up-right" aria-hidden />
                       Open the analyzer
@@ -252,9 +304,7 @@ function Index() {
                   </div>
                 </div>
                 <div className="md:col-span-5">
-                  {}
                   <div className="rounded-2xl border border-hairline bg-background/60 p-5 space-y-4">
-                    {}
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium border border-hairline">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -263,7 +313,6 @@ function Index() {
                       <span className="font-mono text-[10px] text-muted-foreground">window · 2.56s</span>
                     </div>
 
-                    {}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-lg border border-hairline p-3 font-mono bg-background/20">
                         <div className="text-[9px] text-muted-foreground uppercase tracking-wider">Stability Score</div>
@@ -277,7 +326,6 @@ function Index() {
                       </div>
                     </div>
 
-                    {}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
                         <span>Jerk (suddenness)</span>
@@ -289,7 +337,6 @@ function Index() {
                       </div>
                     </div>
 
-                    {}
                     <div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-foreground/10">
                         <div
@@ -307,7 +354,6 @@ function Index() {
                       </div>
                     </div>
 
-                    {}
                     <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground pt-1 border-t border-hairline">
                       <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
                       <span>ML Engine Connected</span>
@@ -320,97 +366,8 @@ function Index() {
           </div>
         </section>
 
-        <section id="contact" className="scroll-mt-24 px-6 pt-12 pb-16 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <p className="max-w-xl text-foreground/75">
-              Are you a researcher, clinician, or someone working with movement data? If you have questions or want to collaborate, please reach out, I would be happy and grateful to help.
-            </p>
-
-            <div className="mt-16 hairline-t">
-              <div className="grid grid-cols-12 gap-4 py-6">
-                <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Profiles</div>
-                <div className="col-span-12 md:col-span-4 self-end text-sm">
-                  <a href="https://www.linkedin.com/in/advait-patel-a2a6323aa/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
-                    <i className="bi bi-linkedin" aria-hidden /> LinkedIn
-                  </a>
-                </div>
-                <div className="col-span-12 md:col-span-4 self-end text-sm">
-                  <a href="https://github.com/advaitpatel-official/KineTrace" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
-                    <i className="bi bi-github" aria-hidden /> GitHub
-                  </a>
-                </div>
-              </div>
-              <div className="hairline-t grid grid-cols-12 gap-4 py-6">
-                <div className="col-span-12 md:col-span-4 font-display text-4xl md:text-5xl">Contact</div>
-                <div className="col-span-12 md:col-span-4 self-end text-sm">
-                  <a href="mailto:advait.patel@outlook.com" className="inline-flex items-center gap-2 hover:underline break-all">
-                    <i className="bi bi-envelope" aria-hidden /> advait.patel@outlook.com
-                  </a>
-                </div>
-                <div className="col-span-12 md:col-span-4 self-end text-sm">
-                  <a href="https://advaitpatel.netlify.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
-                    <i className="bi bi-box-arrow-up-right" aria-hidden /> Developer Website
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="px-6 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <div className="mt-16 hairline-t py-6 text-xs text-muted-foreground leading-relaxed space-y-3">
-              <p className="font-semibold text-foreground">Medical & Physical Activity Disclaimer</p>
-              <p>
-                KineTrace is an experimental software demonstration tool and is <strong>NOT</strong> a medical device, diagnostic tool, or healthcare service. The movement analyses, predictions, and metrics provided by KineTrace are for informational and research purposes only and do not constitute medical, biomechanical, or physical therapy advice.
-              </p>
-              <p>
-                By using this application or participating in data collection, you acknowledge that engaging in physical activities (including walking, running, jumping, or climbing stairs) carries inherent risk of physical injury. You voluntarily assume all risks associated with performing these movements and agree that KineTrace and its operators shall not be liable for any injuries, damages, or claims arising from your use of the software or participation in trial activities.
-              </p>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <a href="/src/assets/files/KineTrace_Terms_of_Service.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-text" /> Terms of Service</a>
-                <a href="/src/assets/files/KineTrace_Privacy_Policy.pdf" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-shield-check" /> Privacy Policy</a>
-                <a href="/src/assets/files/LICENSE.md" download className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-foreground/80 hover:bg-foreground hover:text-background transition-colors"><i className="bi bi-file-earmark-text" /> License</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <footer className="px-6 pb-6 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <div className="max-w-md text-xs text-muted-foreground">
-                © KineTrace {new Date().getFullYear()}. Research prototype.
-                <br />
-                Built on blended UCI HAR + MotionSense datasets.
-              </div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:text-right">
-                v0.1 · prototype
-              </div>
-            </div>
-            <svg
-              aria-hidden
-              viewBox="0 0 1000 220"
-              preserveAspectRatio="xMidYMid meet"
-              className="mt-8 block w-full select-none"
-            >
-              <text
-                x="500"
-                y="180"
-                textAnchor="middle"
-                textLength="1000"
-                lengthAdjust="spacingAndGlyphs"
-                fontFamily="Inter, sans-serif"
-                fontWeight={600}
-                fontSize={220}
-                letterSpacing="-8"
-                fill="currentColor"
-              >
-                kinetrace
-              </text>
-            </svg>
-          </div>
-        </footer>
+        <ContactSection />
+        <Footer />
       </div>
     </>
   );

@@ -114,7 +114,7 @@ export function HeroCarousel() {
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
+      <div className="mt-4 flex items-center justify-end gap-4">
         <div className="flex gap-1.5">
           {slides.map((_, i) => (
             <button
@@ -134,8 +134,6 @@ export function HeroCarousel() {
         <div className="flex items-center gap-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
             {String(index + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
-            <span className="mx-2">·</span>
-            {mode}
           </span>
           <div className="flex items-center gap-1">
             <button
