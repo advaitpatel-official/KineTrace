@@ -1067,6 +1067,7 @@ function Documentation() {
         {}
         <div
           aria-hidden={!sidebarOpen}
+          {...(!sidebarOpen ? { inert: true } : {})}
           className={`fixed inset-0 z-60 md:hidden transition-all duration-300 ${
             sidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}

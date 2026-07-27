@@ -1,0 +1,23 @@
+{
+  "name": "KineTrace",
+  "short_name": "KineTrace",
+  "description": "KineTrace uses wearable sensor data and machine learning to quantify human movement stability, producing a clinical KineTrace Stability Index (KSI) score.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -258,6 +258,7 @@ export function StickyNav() {
       {}
       <div
         aria-hidden={!mobileOpen}
+        {...(!mobileOpen ? { inert: true } : {})}
         className={`fixed inset-0 z-50 transition-all duration-300 ${
           mobileOpen
             ? "pointer-events-auto opacity-100"
