@@ -951,7 +951,7 @@ function Documentation() {
   }, [sidebarOpen, isMobile]);
 
   const sidebarNav = (
-    <nav className="py-4 space-y-4">
+    <nav className="-mx-0.5 px-0.5 py-4 space-y-4">
       <button
         type="button" onClick={() => handleSidebarPageClick(homePage.id)}
         className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors shadow-none ${
@@ -1022,18 +1022,19 @@ function Documentation() {
 
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 pt-14 pb-24 md:grid-cols-[280px_1fr] md:px-12 md:pt-20">
         {}
-        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto pr-2 **:overflow-visible [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/15 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-background [&::-webkit-scrollbar-thumb]:hover:bg-foreground/30">
-          <div className="sticky top-0 z-10 bg-background pt-1 pb-2 -mb-2">
-            <div className="relative">
+        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto md:overflow-visible after:pointer-events-none after:sticky after:bottom-0 after:z-20 after:block after:h-10 after:bg-gradient-to-t after:from-background after:to-transparent before:pointer-events-none before:sticky before:top-0 before:z-20 before:block before:h-16 before:-mb-16 before:bg-gradient-to-b before:from-background before:to-transparent [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/15 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-background [&::-webkit-scrollbar-thumb]:hover:bg-foreground/30">
+          <div className="p-[5px] pr-2">
+          <div className="sticky top-0 z-30 -mx-[5px] -mt-[5px] px-[5px] pt-[5px]">
+            <div className="relative p-0.5">
               <input
                 type="text"
                 placeholder="Search docs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border border-hairline bg-background px-3 py-1 font-mono text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                className="w-full rounded-full border border-hairline backdrop-blur-md bg-background/60 px-3 py-1 font-mono text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
               />
               {searchQuery && (
-              <div className="absolute top-full mt-2 left-2 w-[calc(100%-16px)] bg-background border border-hairline rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
+              <div className="absolute top-full mt-2 left-3 w-[calc(100%-22px)] bg-background border border-hairline rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
                   {searchResults.length === 0 ? (
                     <div className="p-3 text-[10px] text-muted-foreground font-mono">No results found</div>
                   ) : (
@@ -1059,8 +1060,9 @@ function Documentation() {
               )}
             </div>
           </div>
-          <div className="mt-1">
+          <div className="mt-0">
             {sidebarNav}
+          </div>
           </div>
         </aside>
 
