@@ -94,6 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      {rel: "icon", href: "/icon-192x192.png", type: "image/png", sizes: "192x192"},
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "apple-touch-icon", href: "/icon-192x192.png", sizes: "192x192" },
@@ -114,23 +115,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  // SEO Structured Data
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "KineTrace",
-    "operatingSystem": "Web Browser",
-    "applicationCategory": "HealthApplication",
-    "description": "Signal-processing and machine learning pipeline quantifying human movement stability and fall risk from tri-axial wearable sensor data.",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "KineTrace"
-    }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "KineTrace",
+        "url": "https://kinetrace.netlify.app/"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "KineTrace",
+        "operatingSystem": "Web Browser",
+        "applicationCategory": "HealthApplication",
+        "description": "Signal-processing and machine learning pipeline quantifying human movement stability and fall risk from tri-axial wearable sensor data.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "KineTrace"
+        }
+      }
+    ]
   };
 
   return (
@@ -143,7 +152,7 @@ function RootShell({ children }: { children: ReactNode }) {
               "try{history.scrollRestoration='manual';var t=localStorage.getItem('kt-theme');if(t!=='dark'&&t!=='light'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}",
           }}
         />
-        {/* Inject JSON-LD Script for Google Rich Snippets */}
+        {/* Inject JSON-LD Script for Google Rich Snippets & Site Name */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -157,6 +166,7 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
