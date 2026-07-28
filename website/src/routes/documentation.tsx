@@ -1022,9 +1022,9 @@ function Documentation() {
 
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 pt-14 pb-24 md:grid-cols-[280px_1fr] md:px-12 md:pt-20">
         {}
-        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto md:overflow-visible after:pointer-events-none after:sticky after:bottom-0 after:z-20 after:block after:h-10 after:bg-gradient-to-t after:from-background after:to-transparent before:pointer-events-none before:sticky before:top-0 before:z-20 before:block before:h-16 before:-mb-16 before:bg-gradient-to-b before:from-background before:to-transparent [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/15 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-background [&::-webkit-scrollbar-thumb]:hover:bg-foreground/30">
-          <div className="p-[5px] pr-2">
-          <div className="sticky top-0 z-30 -mx-[5px] -mt-[5px] px-[5px] pt-[5px]">
+        <aside className="hidden md:block md:sticky md:top-28 md:h-[calc(100vh-8rem)] md:overflow-y-auto md:overflow-visible after:pointer-events-none after:sticky after:bottom-0 after:z-20 after:block after:h-10 after:bg-linear-to-t after:from-background after:to-transparent before:pointer-events-none before:sticky before:top-0 before:z-20 before:block before:h-16 before:-mb-16 before:bg-linear-to-b before:from-background before:to-transparent [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/15 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-background [&::-webkit-scrollbar-thumb]:hover:bg-foreground/30">
+          <div className="p-1.25 pr-2">
+          <div className="sticky top-0 z-30 -mx-1.25 -mt-1.25 px-1.25 pt-1.25">
             <div className="relative p-0.5">
               <input
                 type="text"
