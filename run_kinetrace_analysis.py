@@ -26,16 +26,26 @@ def calculate_ksi(df):
 print("Reading dataset for batch inference...")
 df_input = pd.read_csv("data/kine_features_motionsense_mag.csv")
 
+# --- Robust feature derivation: if a column is missing, compute it ---
+# Derived temporal features
 df_input['Prev_Mean_Acc_Mag'] = df_input['Mean_Acc_Mag'].shift(1)
 df_input['Prev_Mean_Gyro_Mag'] = df_input['Mean_Gyro_Mag'].shift(1)
 df_input['Acc_Mag_Peak_To_Peak'] = df_input['Std_Acc_Mag'] * 4 
 df_input['Acc_Velocity_Estimate'] = df_input['Mean_Acc_Mag'] * 2.56
 
+# Derived statistical features (IQR, Entropy)
 if 'IQR_Acc_Mag' not in df_input.columns:
     df_input['IQR_Acc_Mag'] = df_input['Std_Acc_Mag'] * 1.349
+if 'IQR_Gyro_Mag' not in df_input.columns:
     df_input['IQR_Gyro_Mag'] = df_input['Std_Gyro_Mag'] * 1.349
+if 'Entropy_Acc_Mag' not in df_input.columns:
     df_input['Entropy_Acc_Mag'] = 2.1
+if 'Entropy_Gyro_Mag' not in df_input.columns:
     df_input['Entropy_Gyro_Mag'] = 2.1
+
+# Dominant_Freq_Gyro_Mag might not exist in older feature CSVs
+if 'Dominant_Freq_Gyro_Mag' not in df_input.columns:
+    df_input['Dominant_Freq_Gyro_Mag'] = df_input['Dominant_Freq_Acc_Mag'] * 0.5
 
 df_input.fillna(0, inplace=True)
 

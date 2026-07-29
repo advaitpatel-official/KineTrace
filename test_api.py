@@ -1,6 +1,7 @@
 import os
 import glob
 import requests
+import pandas as pd
 
 csv_files = glob.glob("data/MotionSense/**/*.csv", recursive=True)
 if not csv_files:
@@ -10,10 +11,34 @@ if not csv_files:
 target_file = csv_files[0]
 print(f"🚀 Sending real telemetry file: {target_file}")
 
+# MotionSense CSVs have columns like userAcceleration.x/y/z and rotationRate.x/y/z
+# The API expects ax, ay, az, gx, gy, gz - so we remap
+df = pd.read_csv(target_file)
+
+# Check which columns exist and remap accordingly
+if 'userAcceleration.x' in df.columns and 'rotationRate.x' in df.columns:
+    # MotionSense DeviceMotion format
+    df_remapped = pd.DataFrame({
+        'ax': df['userAcceleration.x'],
+        'ay': df['userAcceleration.y'],
+        'az': df['userAcceleration.z'],
+        'gx': df['rotationRate.x'],
+        'gy': df['rotationRate.y'],
+        'gz': df['rotationRate.z'],
+    })
+elif 'ax' in df.columns and 'ay' in df.columns:
+    # Already in API format
+    df_remapped = df[['ax', 'ay', 'az', 'gx', 'gy', 'gz']].copy() if all(c in df.columns for c in ['gx', 'gy', 'gz']) else df[['ax', 'ay', 'az']].copy()
+else:
+    print(f"Unknown column format: {list(df.columns)}")
+    exit()
+
+print(f"Remapped {len(df_remapped)} rows from {list(df.columns)} -> {list(df_remapped.columns)}")
+
 url = "https://kinetrace.onrender.com/api/ingest"
-with open(target_file, "rb") as f:
-    files = {"file": (os.path.basename(target_file), f, "text/csv")}
-    response = requests.post(url, files=files)
+csv_buffer = df_remapped.to_csv(index=False)
+files = {"file": (os.path.basename(target_file).replace('.csv', '_remapped.csv'), csv_buffer, "text/csv")}
+response = requests.post(url, files=files)
 
 if response.status_code == 200:
     print("Success! Server Response:")

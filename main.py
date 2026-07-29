@@ -78,6 +78,35 @@ def compute_ksi(magnitude_series, jerk_series):
     ksi = max(0.0, 100.0 - (50.0 * mean_abs_jerk + 20.0 * std_dev))
     return round(ksi, 2)
 
+def estimate_tug_from_signals(mean_abs_jerk, std_dev, mean_acc_mag, ksi):
+    """
+    Heuristic TUG estimation based on biomechanical signals.
+    Higher jerk/variance = worse mobility = higher TUG score.
+    Normal TUG: 7-10 seconds. Impaired: >13.5 seconds.
+    """
+    # Base TUG for healthy adult
+    base_tug = 8.0
+    
+    # Jerk penalty: higher jerk = worse control
+    jerk_penalty = mean_abs_jerk * 15.0
+    
+    # Variability penalty: higher variance = more instability
+    variance_penalty = std_dev * 8.0
+    
+    # KSI penalty: lower stability = higher TUG
+    ksi_penalty = max(0, (100 - ksi) * 0.05)
+    
+    # Acceleration magnitude factor: very low or very high acc indicates impairment
+    if mean_acc_mag < 0.3 or mean_acc_mag > 2.5:
+        acc_penalty = 3.0
+    else:
+        acc_penalty = 0.0
+    
+    tug = base_tug + jerk_penalty + variance_penalty + ksi_penalty + acc_penalty
+    
+    # Clamp to realistic range
+    return round(max(4.0, min(30.0, tug)), 2)
+
 def process_raw_telemetry(df_raw, sampling_rate=50):
     acc_mag = np.sqrt(df_raw['ax']**2 + df_raw['ay']**2 + df_raw['az']**2)
     gyro_mag = np.sqrt(df_raw['gx']**2 + df_raw['gy']**2 + df_raw['gz']**2) if all(c in df_raw.columns for c in ['gx', 'gy', 'gz']) else None
@@ -177,11 +206,15 @@ async def ingest_telemetry(background_tasks: BackgroundTasks, request: Request, 
         except Exception as e:
             print(f"Activity prediction failed: {e}")
 
-    if 'rf_tug' in models_cache:
-        try:
-            tug_score = float(models_cache['rf_tug'].predict(features)[0])
-        except Exception as e:
-            print(f"TUG prediction failed: {e}")
+    # Use heuristic TUG estimation instead of the broken ML model
+    # The rf_tug model was trained on data with hardcoded TUG scores (always 11.0),
+    # so it cannot produce meaningful predictions
+    tug_score = estimate_tug_from_signals(
+        mean_abs_jerk=signals['mean_abs_jerk'],
+        std_dev=signals['std_dev'],
+        mean_acc_mag=float(features['Mean_Acc_Mag'].iloc[0]),
+        ksi=signals['ksi']
+    )
 
     ksi = signals['ksi']
     jerk = signals['mean_abs_jerk']
