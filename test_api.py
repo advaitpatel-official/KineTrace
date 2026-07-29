@@ -11,13 +11,9 @@ if not csv_files:
 target_file = csv_files[0]
 print(f"🚀 Sending real telemetry file: {target_file}")
 
-# MotionSense CSVs have columns like userAcceleration.x/y/z and rotationRate.x/y/z
-# The API expects ax, ay, az, gx, gy, gz - so we remap
 df = pd.read_csv(target_file)
 
-# Check which columns exist and remap accordingly
 if 'userAcceleration.x' in df.columns and 'rotationRate.x' in df.columns:
-    # MotionSense DeviceMotion format
     df_remapped = pd.DataFrame({
         'ax': df['userAcceleration.x'],
         'ay': df['userAcceleration.y'],
@@ -27,7 +23,6 @@ if 'userAcceleration.x' in df.columns and 'rotationRate.x' in df.columns:
         'gz': df['rotationRate.z'],
     })
 elif 'ax' in df.columns and 'ay' in df.columns:
-    # Already in API format
     df_remapped = df[['ax', 'ay', 'az', 'gx', 'gy', 'gz']].copy() if all(c in df.columns for c in ['gx', 'gy', 'gz']) else df[['ax', 'ay', 'az']].copy()
 else:
     print(f"Unknown column format: {list(df.columns)}")

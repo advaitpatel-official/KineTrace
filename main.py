@@ -84,19 +84,14 @@ def estimate_tug_from_signals(mean_abs_jerk, std_dev, mean_acc_mag, ksi):
     Higher jerk/variance = worse mobility = higher TUG score.
     Normal TUG: 7-10 seconds. Impaired: >13.5 seconds.
     """
-    # Base TUG for healthy adult
     base_tug = 8.0
     
-    # Jerk penalty: higher jerk = worse control
     jerk_penalty = mean_abs_jerk * 15.0
     
-    # Variability penalty: higher variance = more instability
     variance_penalty = std_dev * 8.0
     
-    # KSI penalty: lower stability = higher TUG
     ksi_penalty = max(0, (100 - ksi) * 0.05)
     
-    # Acceleration magnitude factor: very low or very high acc indicates impairment
     if mean_acc_mag < 0.3 or mean_acc_mag > 2.5:
         acc_penalty = 3.0
     else:
@@ -104,7 +99,6 @@ def estimate_tug_from_signals(mean_abs_jerk, std_dev, mean_acc_mag, ksi):
     
     tug = base_tug + jerk_penalty + variance_penalty + ksi_penalty + acc_penalty
     
-    # Clamp to realistic range
     return round(max(4.0, min(30.0, tug)), 2)
 
 def process_raw_telemetry(df_raw, sampling_rate=50):
@@ -147,8 +141,8 @@ def require_api_key(request: Request):
     if key != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized: invalid or missing API key")
 
-RATE_LIMIT_WINDOW = 60  # seconds
-RATE_LIMIT_MAX = 10     # max requests per window per IP
+RATE_LIMIT_WINDOW = 60
+RATE_LIMIT_MAX = 10
 rate_limit_buckets: dict[str, list[float]] = defaultdict(list)
 
 def rate_limit(request: Request):
@@ -206,9 +200,6 @@ async def ingest_telemetry(background_tasks: BackgroundTasks, request: Request, 
         except Exception as e:
             print(f"Activity prediction failed: {e}")
 
-    # Use heuristic TUG estimation instead of the broken ML model
-    # The rf_tug model was trained on data with hardcoded TUG scores (always 11.0),
-    # so it cannot produce meaningful predictions
     tug_score = estimate_tug_from_signals(
         mean_abs_jerk=signals['mean_abs_jerk'],
         std_dev=signals['std_dev'],
