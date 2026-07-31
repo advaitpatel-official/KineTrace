@@ -145,7 +145,6 @@ function AnalyzerDashboard() {
 
   const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
-  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const [showAppPopup, setShowAppPopup] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem("kt-app-popup-dismissed");
@@ -196,12 +195,6 @@ function AnalyzerDashboard() {
       action();
     }
   }, [disclaimerAccepted]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setShowMobileWarning(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (!isDropdownOpen) return;
@@ -684,7 +677,7 @@ function AnalyzerDashboard() {
       )}
 
       {showAppPopup && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
           <div className="mx-auto w-full max-w-md rounded-2xl border border-hairline bg-background p-6 shadow-2xl animate-fade-up">
             <div className="flex items-center gap-2 mb-4">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground/5 border border-hairline">
@@ -742,18 +735,6 @@ function AnalyzerDashboard() {
           </div>
         </div>
       )}
-      {showMobileWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
-          <div className="w-full max-w-sm rounded-2xl border border-hairline bg-background p-6 shadow-2xl animate-fade-up">
-            <h3 className="font-display text-lg tracking-tight">Desktop Recommended</h3>
-            <p className="mt-2 text-sm text-foreground/70 leading-relaxed">The KineTrace Analyzer is optimized for desktop use. For the best experience with waveform visualization and data analysis, please open this page on a computer.</p>
-            <div className="mt-6 flex justify-end">
-              <button type="button" onClick={() => setShowMobileWarning(false)} className="rounded-full bg-foreground px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-background hover:bg-foreground/80 transition-colors">Continue Anyway</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {mlWarningType && !dismissedMlWarning && (
         <div className={`flex items-center gap-3 border-b px-4 py-2.5 font-mono text-[11px] backdrop-blur-md ${
           mlWarningType === "waking"
