@@ -24,36 +24,38 @@ const homePage: DocPage = {
   id: "docs-home",
   title: "Home",
   eyebrow: "Getting Started",
-  summary: "Everything you need to know to use KineTrace — from loading your first file to understanding your stability scores.",
+  summary: "KineTrace helps you understand how steady or unsteady your movement is — using nothing more than your phone.",
   icon: "bi-shield-check",
   body: [
     {
       heading: "What is KineTrace?",
       copy: [
-        "KineTrace is a tool that analyzes movement data from phones, smartwatches, or wearable sensors and gives you a simple stability score. It's designed for researchers, clinicians, or anyone who wants to measure how steady or unsteady someone's movement is.",
-        "You upload a recording of someone walking, standing, or moving (captured by any device with an accelerometer). KineTrace looks at tiny details in the movement that are invisible to the human eye and produces a score from 0 (very unsteady) to 100 (very steady).",
-        "The project is built on two public research datasets — UCI HAR and MotionSense — which gives it a strong foundation for analyzing movement from different types of devices.",
-        "KineTrace processes data in 2.56-second windows (50 frames at 50 Hz), computing jerk and variance for each window. These values feed into the KSI formula, which produces a score that correlates with movement stability. The system also classifies the type of movement (walking, sitting, standing, stairs) using a trained Random Forest classifier.",
+        "KineTrace is a tool that turns your phone or smartwatch into a movement health tracker. It analyzes how you walk, stand, and move, then gives you a simple score from 0 to 100 that tells you how steady or unsteady your movement is. Think of it like a check engine light for your body — it doesn't tell you what's wrong, but it lets you know when something might need attention.",
+        "There are two ways to use KineTrace, depending on your comfort level:",
+        "1. The KineTrace Mobile App (iOS & Android) — This is the easiest way. Download the app, put your phone in your pocket, take a short walk, and you'll get your stability score instantly. The app handles everything — collecting your movement data, analyzing it, and showing you easy-to-understand results. No technical knowledge needed. It's designed for anyone who wants to check in on their movement health.",
+        "2. The Web Analyzer (this website) — This is a more advanced tool designed for clinicians, researchers, fitness professionals, and anyone who already understands movement data. It gives you detailed charts, filters, and raw data views. You'll need to record your movement separately (using a sensor app) and upload the file. If you're a healthcare professional running assessments or a researcher analyzing movement patterns, this is the tool for you.",
+        "Both tools use the same core analysis engine. The difference is simply how you interact with them — the mobile app is designed for simplicity, the web analyzer is designed for depth.",
       ],
     },
     {
       heading: "CSI vs. KSI — Two Scores, One Purpose",
       copy: [
-        "KineTrace actually shows you two related scores:",
-        "CSI (Current Stability Index) — This measures how stable your movement is right now. It's the real-time score based on the current data.",
-        "KSI (KineTrace Stability Index) — This is a predictive score. It looks at how erratic your movement patterns are and adjusts the CSI downward if it detects signs that risk is increasing. A person might be walking smoothly right now (high CSI), but if their movement shows subtle signs of instability, the KSI will be lower — an early warning.",
+        "KineTrace shows you two related scores, and understanding the difference is simpler than it sounds:",
+        "CSI (Current Stability Index) — This is how you're moving right now. It measures your current movement and gives you a score based on what's happening in this moment. A high score means smooth, steady movement right now.",
+        "KSI (KineTrace Stability Index) — This is where you're heading. It looks at your current movement but also checks for subtle signs that things might be getting worse. If your movement shows early warning signs of instability, KSI will be lower than CSI — giving you an early heads up before a problem becomes obvious.",
         "Think of it like this: CSI is how you're moving today. KSI is where you're heading tomorrow.",
-        "Both scores are calculated from the same underlying metrics — jerk (the rate of change of acceleration) and variance (the spread of acceleration values). The difference is that KSI applies a penalty factor based on the variability of movement patterns across windows, making it more sensitive to emerging instability that hasn't yet affected the current movement quality.",
+        "Both scores go from 0 to 100. Higher is better. The mobile app and web analyzer both show you these scores clearly.",
       ],
     },
     {
-      heading: "The Main Number: KSI (KineTrace Stability Index)",
+      heading: "The Main Number: The Stability Score",
       copy: [
-        "KSI is the most important number on the screen. It's a score from 0 to 100 that tells you how stable someone's movement is:",
-        "• 75–100 = Optimal (green) — smooth, controlled movement. Low risk.",
-        "• 40–75 = Degraded (yellow) — some irregularity detected. Moderate risk.",
-        "• 0–40 = Critical (red) — significant instability. High risk of falling.",
-        "The score is calculated from two things: 'jerk' (how suddenly movement changes) and 'variance' (how much movement varies from moment to moment). Stable walking has low jerk and low variance. Shaky movement has high jerk and high variance.",
+        "The stability score (KSI) is the most important number you'll see. It's a score from 0 to 100, color-coded so you can understand it at a glance:",
+        "• 75–100 = Green (Optimal) — Smooth, controlled movement. Low risk.",
+        "• 40–75 = Yellow (Degraded) — Some irregularity detected. Moderate risk.",
+        "• 0–40 = Red (Critical) — Significant instability. High risk.",
+        "The score is calculated by looking at two things: how suddenly your movement changes (jerk) and how much your movement varies from moment to moment (variance). Steady walking has low jerk and low variance. Shaky movement has high jerk and high variance.",
+        "The mobile app shows you this score in a simple, friendly interface. The web analyzer shows you the same score but also gives you deeper insights and controls if you want them.",
       ],
     },
   ],
@@ -69,17 +71,17 @@ const docGroups: DocGroup[] = [
         id: "file-formats",
         title: "File Types Accepted",
         eyebrow: "Loading Data",
-        summary: "KineTrace accepts CSV, TXT, and JSON files. The system automatically finds the right columns in your file.",
+        summary: "If you're using the web analyzer, KineTrace accepts CSV, TXT, and JSON files. The system automatically finds the right columns in your file.",
         icon: "bi-file-earmark-text",
         body: [
           {
             heading: "CSV and TXT Files",
             copy: [
               "Your file's first row should be a header row with column names. The system looks for these column names (they are not case-sensitive):",
-              "Required: ax, ay, az — acceleration measurements in g-force units.",
+              "Required: ax, ay, az — acceleration measurements.",
               "Optional (but helpful): timestamp_ms (the time of each reading), gx, gy, gz (gyroscope data), magnitude (if you've already calculated it).",
               "If you don't include timestamps, the system automatically creates them, spacing each reading 20 milliseconds apart.",
-              "If you don't include magnitude, the system calculates it automatically: √(ax² + ay² + az²).",
+              "If you don't include magnitude, the system calculates it automatically.",
             ],
             codeBlock: "timestamp_ms,ax,ay,az,gx,gy,gz\n0,0.120,0.940,-0.050,0.020,-0.010,0.040\n20,0.150,0.890,-0.080,-0.010,0.030,0.010",
           },
@@ -92,9 +94,9 @@ const docGroups: DocGroup[] = [
           {
             heading: "Need a Template?",
             copy: [
-              "On the analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV with the correct headers and example rows. Use this to format your own data correctly.",
+              "On the web analyzer page, click 'Download Template' in the 'Data Collection Tool' section. This gives you a CSV with the correct headers and example rows. Use this to format your own data correctly.",
               "There's also a 'Get Sample' button that downloads a short sample dataset from the server for testing.",
-              "The analyzer also comes with built-in example data (the 'factory dataset') with ~10,500 frames of simulated activity — you can start exploring immediately without uploading anything.",
+              "The web analyzer also comes with built-in example data — you can start exploring immediately without uploading anything.",
             ],
           },
         ],
@@ -103,14 +105,14 @@ const docGroups: DocGroup[] = [
         id: "pagination",
         title: "Browsing Your Data",
         eyebrow: "Loading Data",
-        summary: "The analyzer shows your data one page at a time. You can change how many rows appear per page and jump around the dataset.",
+        summary: "The web analyzer shows your data one page at a time. You can change how many rows appear per page and jump around the dataset.",
         icon: "bi-layout-three-columns",
         body: [
           {
             heading: "How Browsing Works",
             copy: [
               "Your data is divided into pages. 50 rows are shown by default, but you can change this using the slider (from 10 to 200 rows at a time).",
-              "Use the navigation buttons to move around: First page (««), Previous page (‹), Next page (›), Last page (»»). The current page number is shown in the middle.",
+              "Use the navigation buttons to move around: First page, Previous page, Next page, Last page. The current page number is shown in the middle.",
               "Note: Changing the page size or applying a filter will reset you back to page 1.",
             ],
           },
@@ -120,15 +122,22 @@ const docGroups: DocGroup[] = [
         id: "getting-data",
         title: "Getting Movement Data",
         eyebrow: "Loading Data",
-        summary: "How to capture or source movement data for use with KineTrace. You can use any phone or wearable.",
+        summary: "The easiest way to get movement data is with the KineTrace mobile app. For the web analyzer, you'll need to record your movement using a sensor app.",
         icon: "bi-phone",
         body: [
           {
-            heading: "How to Capture Movement Data",
+            heading: "The Easiest Way: Use the KineTrace Mobile App",
             copy: [
-              "You don't need expensive lab equipment. Any smartphone, smartwatch, or fitness tracker with an accelerometer can record the data KineTrace needs.",
-              "The easiest way is to download a sensor recording app on your phone. Apps like 'Physics Toolbox Sensor Suite' (Android and iOS) or 'Sensor Logger' can record accelerometer data and export it as a CSV file. Just place the phone in someone's pocket or hold it against their body while they walk, stand, or move.",
-              "Your file needs at least three columns: ax, ay, az (the acceleration in the X, Y, and Z directions). A timestamp_ms column (the time of each reading) is optional but helpful. Most sensor apps can export this format directly.",
+              "The KineTrace mobile app for iOS and Android is the simplest way to use this tool. Just download the app, put your phone in your pocket, and take a short walk. The app records your movement, analyzes it, and shows you your stability score — all in one place. No files to upload, no settings to configure. It's designed for anyone who wants to understand their movement health without any technical hassle.",
+              "The mobile app is perfect for: checking your own stability at home, tracking changes over time, sharing results with your doctor, and getting peace of mind for yourself or a loved one.",
+            ],
+          },
+          {
+            heading: "For the Web Analyzer: Recording Movement Data",
+            copy: [
+              "If you're using the web analyzer (designed for clinicians, researchers, and experienced users), you'll need to record your movement data separately and upload it. Any smartphone, smartwatch, or fitness tracker with an accelerometer can record the data KineTrace needs.",
+              "The easiest way to record is by downloading a sensor recording app like 'Physics Toolbox Sensor Suite' (Android and iOS) or 'Sensor Logger'. These apps can record accelerometer data and export it as a CSV file. Just place the phone in someone's pocket or hold it against their body while they walk, stand, or move.",
+              "Your file needs at least three columns: ax, ay, az (the acceleration in the X, Y, and Z directions). A timestamp_ms column is optional but helpful. Most sensor apps can export this format directly.",
             ],
           },
         ],
@@ -144,43 +153,37 @@ const docGroups: DocGroup[] = [
         id: "real-world-uses",
         title: "Real-World Uses",
         eyebrow: "Use Cases",
-        summary: "Practical ways to use KineTrace for fall risk screening, recovery tracking, medication monitoring, and more.",
+        summary: "Practical ways to use KineTrace — whether you're checking your own stability, tracking recovery, or helping someone you care about.",
         icon: "bi-globe",
         body: [
           {
-            heading: "Fall Risk Screening for Older Adults",
+            heading: "Checking Your Own Movement Health",
             copy: [
-              "Record a short walk with a phone in someone's pocket. KineTrace produces a KSI score that indicates their current stability level. A low KSI (below 40) suggests significant instability and high fall risk. This can be done as a quick, non-invasive screening that doesn't require a doctor's visit. Repeat monthly to track changes over time.",
+              "The simplest use: download the KineTrace mobile app, put your phone in your pocket, and take a walk. You'll get your stability score immediately. Do this once a week to track how your movement changes over time. If your score starts dropping, it might be a sign to talk to your doctor. It's like checking your blood pressure — but for how you move.",
             ],
           },
           {
-            heading: "Tracking Recovery After Injury or Surgery",
+            heading: "Keeping an Eye on a Loved One",
             copy: [
-              "Record movement data each week during recovery from a leg injury, hip replacement, or stroke. Upload each session separately (without clearing) to build a timeline. Monitor whether the KSI score trends upward (improving stability) or stays flat (recovery plateau). A rising KSI means the rehabilitation is working.",
+              "Worried about an aging parent or relative? Have them take a short walk with the KineTrace app once a week. The app gives you an objective, repeatable measurement that's much more sensitive than just watching someone move. If you see their score trending down over several weeks, it might be time to have a conversation with their healthcare provider.",
             ],
           },
           {
-            heading: "Comparing Different Conditions",
+            heading: "Tracking Recovery After an Injury or Surgery",
             copy: [
-              "Record the same person walking on different surfaces (carpet vs. tile), with different shoes, or at different times of day. Upload each recording separately and compare the KSI scores. The score will be lower on unstable surfaces or when the person is tired. This helps identify specific situations that increase fall risk.",
+              "After a leg injury, hip replacement, or stroke, recovery can be hard to measure. KineTrace lets you track your progress objectively. Record a walk each week and watch your score improve over time. A rising score means your rehabilitation is working. You can share these results with your physical therapist or doctor.",
             ],
           },
           {
             heading: "Monitoring Medication Effects",
             copy: [
-              "For conditions that affect movement (Parkinson's, multiple sclerosis, vertigo), record movement data before and after medication. Compare the KSI scores to measure whether the medication improves movement stability. A rising KSI score indicates the treatment is working. This provides objective data to share with doctors.",
+              "For conditions that affect movement — like Parkinson's disease, multiple sclerosis, or vertigo — KineTrace can help you and your doctor understand whether treatment is working. Record your movement before and after medication. If your score improves, the treatment is helping. This gives you objective data to share with your healthcare team.",
             ],
           },
           {
-            heading: "Athletic Training and Form Analysis",
+            heading: "For Researchers and Clinicians",
             copy: [
-              "Record an athlete performing exercises (squats, lunges, balance drills). Low variance and consistent jerk patterns (high KSI) indicate good form and control. Increasing KSI over weeks of training shows improved stability and neuromuscular control. This can help coaches identify form issues before they lead to injury.",
-            ],
-          },
-          {
-            heading: "Why KineTrace Is Useful for These Scenarios",
-            copy: [
-              "The key advantage is that KineTrace works with any phone or wearable — no special equipment needed. You can record data anywhere: at home, in a clinic, at a gym, or outdoors. The score gives you an objective, repeatable measurement that's much more sensitive than watching someone move with your eyes. Subtle changes in stability that would be invisible to a human observer show up clearly in the KSI score.",
+              "The web analyzer provides deeper tools for running formal assessments: comparing different conditions, surfaces, or shoes; monitoring patients remotely; conducting research trials; and generating detailed reports. The KineTrace mobile app is also being used in research studies as a simple, standardized way to collect movement data from participants.",
             ],
           },
         ],
@@ -189,21 +192,21 @@ const docGroups: DocGroup[] = [
         id: "for-trial-holders",
         title: "For Trial Holders",
         eyebrow: "Use Cases",
-        summary: "Guidelines for researchers and clinicians conducting trials with KineTrace — consent, safety, and submission.",
+        summary: "Guidelines for researchers and clinicians running formal studies with KineTrace — consent, safety, and data sharing.",
         icon: "bi-clipboard-check",
         body: [
           {
-            heading: "Conducting a Trial Safely",
+            heading: "Running a Study Safely",
             copy: [
-              "If you are running a formal research trial or clinical study using KineTrace, participant safety and proper consent are essential. Before collecting any data, make sure every participant has signed the KineTrace Trial Collection Waiver. Keep a signed copy on file for your records.",
+              "If you're conducting a research trial or clinical study using KineTrace, participant safety and proper consent are essential. Before collecting any data, make sure every participant has signed the KineTrace Trial Collection Waiver. Keep a signed copy on file for your records.",
               "All participants should be informed that KineTrace is a research prototype and not a medical device. They should understand that the tool does not provide medical diagnoses and that they should consult a healthcare professional for any medical concerns.",
               "Data collection should take place in a safe environment. Participants should be supervised during physical activities. Make sure first aid is available and that participants are physically able to perform the requested movements without risk of injury.",
             ],
           },
           {
-            heading: "What to Send When You're Finished",
+            heading: "When Your Study Is Complete",
             copy: [
-              "When your trial is complete, email your anonymized dataset and a brief summary to advait.patel@outlook.com. Include:",
+              "When your trial is complete, email your anonymized dataset and a brief summary to advait.patel@outlook.com. Please include:",
               "• The trial name and institution.",
               "• A short description of the study design and participant demographics.",
               "• The exported data file(s) in CSV or JSON format.",
@@ -214,7 +217,7 @@ const docGroups: DocGroup[] = [
           {
             heading: "Setting Up Your Own Trial",
             copy: [
-              "If you're interested in running your own trial or collaborating on a research study, you can reach out directly at advait.patel@outlook.com to discuss trial setup, access to additional documentation, and any custom requirements for your study.",
+              "If you're interested in running your own trial or collaborating on a research study, reach out directly at advait.patel@outlook.com to discuss trial setup, access to additional documentation, and any custom requirements for your study.",
             ],
           },
           {
@@ -243,7 +246,7 @@ const docGroups: DocGroup[] = [
           {
             heading: "How It Works",
             copy: [
-              "The noise floor filter removes frames where the total acceleration is below a certain threshold. This gets rid of tiny vibrations and sensor noise.",
+              "The noise floor filter removes tiny movements that are too small to be meaningful. This gets rid of minor vibrations and sensor noise that can interfere with your analysis.",
               "The slider goes from 0.00g to 2.00g. The default is 0.15g. Set it higher to focus on bigger movements (like walking) and ignore smaller ones (like sitting still).",
               "As you move the slider, the total row count updates in real-time so you can see how much data is being filtered out.",
             ],
@@ -254,61 +257,27 @@ const docGroups: DocGroup[] = [
         id: "signal-processors",
         title: "Signal Processing Filters",
         eyebrow: "Signal Processing",
-        summary: "Choose from 8 filters that modify how jerk and variance are calculated. Each filter highlights different aspects of movement.",
+        summary: "Choose from 8 filters that change how your movement data is processed. Each filter highlights different aspects of movement.",
         icon: "bi-gear",
         body: [
           {
-            heading: "Butterworth Lowpass (LP) — The Default",
+            heading: "Understanding Filters (Simplified)",
             copy: [
-              "A standard filter that smooths out high-frequency noise. Best for general-purpose analysis. No modifications to jerk or variance.",
-            ],
-          },
-          {
-            heading: "Chebyshev Highpass (HP)",
-            copy: [
-              "Emphasizes rapid, jerky movements by suppressing slow drift. Good for detecting tremors or sudden movements. Makes jerk 1.25× more sensitive.",
-            ],
-          },
-          {
-            heading: "Bessel Bandpass (BP)",
-            copy: [
-              "Captures movement in the 0.5–3 Hz range — the typical frequency of human walking and running. Good for gait analysis.",
-            ],
-          },
-          {
-            heading: "Median Filter (MED)",
-            copy: [
-              "Removes sudden spikes in the data (like sensor dropouts) while keeping the overall signal shape intact.",
-            ],
-          },
-          {
-            heading: "Gaussian Smooth (GAUSS)",
-            copy: [
-              "The most aggressive smoothing filter. Softens high-frequency jitter using a weighted average. Produces the cleanest but most smoothed signal.",
-            ],
-          },
-          {
-            heading: "Kalman Filter (KALM)",
-            copy: [
-              "An adaptive filter that adjusts based on changing conditions. Great for real-time applications because it can handle varying noise levels.",
-            ],
-          },
-          {
-            heading: "Savitzky-Golay (S-G)",
-            copy: [
-              "Preserves the shape of peaks and valleys while smoothing out noise. Best for analyzing walking patterns where you want to keep the natural shape of the signal.",
-            ],
-          },
-          {
-            heading: "Wavelet Denoise (WAV)",
-            copy: [
-              "Breaks the signal into different frequency bands and removes noise from each one separately. Good for complex, non-stationary signals.",
+              "Think of filters like different lenses on a camera. Each lens shows you a different view of the same movement. The web analyzer lets you choose from 8 filters, each designed to highlight different aspects of movement:",
+              "• Lowpass (LP) — The default. Smooths out noise for general-purpose analysis.",
+              "• Highpass (HP) — Emphasizes sudden, jerky movements. Good for detecting tremors.",
+              "• Bandpass (BP) — Focuses on the typical frequency of walking and running. Good for gait analysis.",
+              "• Median (MED) — Removes sudden spikes while keeping the overall signal shape intact.",
+              "• Gaussian (GAUSS) — The most aggressive smoothing. Produces the cleanest signal.",
+              "• Kalman (KALM) — Adapts to changing conditions. Great for real-time applications.",
+              "• Savitzky-Golay (S-G) — Preserves the natural shape of peaks and valleys while smoothing noise.",
+              "• Wavelet (WAV) — Breaks the signal into different frequency bands and removes noise from each one separately.",
             ],
           },
           {
             heading: "How Filters Affect Your Score",
             copy: [
-              "The KSI formula uses jerk and variance. Filters that amplify jerk (like HP) will produce lower KSI scores (more 'critical'). Filters that smooth (like GAUSS) will produce higher KSI scores (more 'optimal'). Choose the filter that matches what you're trying to detect.",
+              "Different filters can produce different stability scores. Filters that emphasize sudden movements (like HP) will typically produce lower scores. Filters that smooth the data (like GAUSS) will typically produce higher scores. The default filter (LP) works well for most situations.",
             ],
           },
         ],
@@ -324,21 +293,21 @@ const docGroups: DocGroup[] = [
         id: "waveform",
         title: "Waveform Viewer",
         eyebrow: "Using the Analyzer",
-        summary: "The waveform canvas shows your acceleration data as colored lines. Blue = X axis, Green = Y axis, Red = Z axis, Purple = total magnitude.",
+        summary: "The waveform shows your movement data as colored lines. Each color represents a different direction of movement.",
         icon: "bi-activity",
         body: [
           {
             heading: "What You're Seeing",
             copy: [
-              "The waveform shows how acceleration changes over time. Each colored line represents a different axis of movement. The purple semi-transparent line is the total magnitude — the combined strength of all three axes.",
+              "The waveform shows how your acceleration changes over time. Each colored line represents a different direction of movement. The purple line is the total combined strength of all directions.",
               "A white dashed vertical line marks the frame you currently have selected. You can click any row in the data table below to jump to that frame.",
             ],
           },
           {
             heading: "Controlling the View",
             copy: [
-              "The waveform range is separate from pagination. You can zoom into a specific range of frames by typing start and end frame numbers in the boxes above the graph. Click 'Reset' to go back to the default view (frames 0–50).",
-              "Use the playback controls to animate through frames: Play/Pause button, Skip-to-Start, speed selector (0.25× to 8×), and a scrubber slider to manually drag through frames.",
+              "You can zoom into a specific range of frames by typing start and end frame numbers in the boxes above the graph. Click 'Reset' to go back to the default view.",
+              "Use the playback controls to animate through frames: Play/Pause, Skip-to-Start, speed selector, and a scrubber slider to manually drag through frames.",
             ],
           },
         ],
@@ -347,43 +316,19 @@ const docGroups: DocGroup[] = [
         id: "kpi-cards",
         title: "Key Metrics Explained",
         eyebrow: "Using the Analyzer",
-        summary: "The cards at the top of the analyzer show important numbers about your data. Here's what each one means.",
+        summary: "The cards at the top of the web analyzer show important numbers. Here's what each one means.",
         icon: "bi-speedometer2",
         body: [
           {
-            heading: "Stability Score (CSI)",
+            heading: "Understanding the Metrics",
             copy: [
-              "The average Current Stability Index across all your data. 0–100. A green dot appears when data is being analyzed. Higher is better.",
-            ],
-          },
-          {
-            heading: "Predictive Risk (KSI)",
-            copy: [
-              "The KineTrace Stability Index — a predictive score that adjusts for movement variability. This is the number that tells you about future risk.",
-            ],
-          },
-          {
-            heading: "Risk Level",
-            copy: [
-              "A colored badge: Low (green), Moderate (yellow), Elevated (orange), or High (red). Based on the KSI score.",
-            ],
-          },
-          {
-            heading: "Peak Jerk",
-            copy: [
-              "The highest 'jerk' value detected. Jerk measures how abruptly movement changes. Higher values mean more sudden movements.",
-            ],
-          },
-          {
-            heading: "Peak Acceleration",
-            copy: [
-              "The strongest acceleration detected in your data, in g-force units.",
-            ],
-          },
-          {
-            heading: "Filter Label",
-            copy: [
-              "Shows which signal processing filter is currently active (LP, HP, BP, MED, GAUSS, KALM, S-G, or WAV).",
+              "The web analyzer shows several key numbers at a glance. Here's what they mean:",
+              "Stability Score (CSI) — The average current stability score across all your data. 0–100. Higher is better.",
+              "Predictive Risk (KSI) — The KineTrace Stability Index. This is the number that tells you about future risk. The mobile app uses this same score.",
+              "Risk Level — A colored badge: Low (green), Moderate (yellow), Elevated (orange), or High (red).",
+              "Peak Jerk — How abruptly movement changes. Higher values mean more sudden movements.",
+              "Peak Acceleration — The strongest acceleration detected in your data.",
+              "Filter Label — Shows which signal processing filter is currently active.",
             ],
           },
         ],
@@ -392,7 +337,7 @@ const docGroups: DocGroup[] = [
         id: "ksi-gauge",
         title: "Stability Gauge",
         eyebrow: "Using the Analyzer",
-        summary: "The gauge bar shows the KSI score visually, with color coding for quick interpretation.",
+        summary: "The gauge bar shows the stability score visually, with color coding for quick interpretation.",
         icon: "bi-bar-chart-fill",
         body: [
           {
@@ -417,8 +362,8 @@ const docGroups: DocGroup[] = [
           {
             heading: "What the Dots Mean",
             copy: [
-              "Green dot = ML Engine is connected and working. Yellow pulsing dot = The engine is starting up. Red dot = ML Engine is offline.",
-              "If the ML Engine is offline, don't worry — KineTrace still works. It falls back to local calculations in your browser using the same formula, so you'll still get accurate KSI scores.",
+              "Green dot = The analysis engine is connected and working. Yellow pulsing dot = The engine is starting up. Red dot = The engine is offline.",
+              "If the engine is offline, don't worry — KineTrace still works. It falls back to local calculations in your browser, so you'll still get accurate stability scores.",
             ],
           },
         ],
@@ -433,11 +378,8 @@ const docGroups: DocGroup[] = [
           {
             heading: "How to Read It",
             copy: [
-              "The cube rotates based on the sensor's pitch (forward/backward tilt) and roll (side-to-side tilt) from the currently selected frame.",
-              "• Pitch (blue): Forward/backward angle, calculated from ax. Positive = tilted forward.",
-              "• Roll (red): Side-to-side angle, calculated from az. Positive = tilted right.",
-              "• Scale (green): The total acceleration magnitude (0.6× to 1.4×).",
-              "The outer ring provides orientation context. The blue dot points in the device's facing direction. Green and red lines inside show the Y and X axes. A pendulum at the bottom swings based on gyroscope data.",
+              "The cube rotates based on the sensor's tilt in different directions. It shows you how the device was oriented when the movement was recorded. This is useful for understanding how the device's position affects the data.",
+              "The colored indicators help you visualize: pitch (forward/backward tilt), roll (side-to-side tilt), and overall acceleration strength.",
             ],
           },
         ],
@@ -446,42 +388,16 @@ const docGroups: DocGroup[] = [
         id: "window-selection",
         title: "Window Selection & Filtering",
         eyebrow: "Using the Analyzer",
-        summary: "Select individual windows in the Analytics tab to focus your analysis on specific time periods.",
+        summary: "Select individual time windows in the Analytics tab to focus your analysis on specific periods of movement.",
         icon: "bi-check2-square",
         body: [
           {
             heading: "How Window Selection Works",
             copy: [
-              "In the Analytics tab, each window row has a small circular selection control on the left, just like the frame selector in the Log tab.",
-              "Click any window row to select it. The circle fills in to indicate selection. Click again to deselect.",
-              "You can select multiple windows. The selection state is shown above the tab bar as a count.",
-            ],
-          },
-          {
-            heading: "What Gets Filtered",
-            copy: [
-              "Once you select one or more windows, the Log tab shows only the frames that fall inside those windows (between each window's startIdx and endIdx). The table paginates over only those frames.",
-              "The Analytics tab table continues showing all windows so you can keep selecting. Selected rows are visually highlighted.",
-              "Summary tab: All statistics recalculate from only the selected windows.",
-              "Waveform: Updates to show only the data from selected windows.",
-              "Stability Gauges: Recalculate based on filtered data.",
-              "Orientation Cube: Reflects the current frame from the filtered dataset.",
-              "Histogram and Frequency Spectrum: Both update to reflect the filtered dataset.",
-            ],
-          },
-          {
-            heading: "Resetting the Selection",
-            copy: [
-              "Click the Reset button that appears when windows are selected to clear the selection and return to the unfiltered view.",
-              "Resetting returns all tabs to showing the complete dataset.",
-            ],
-          },
-          {
-            heading: "Typical Use Cases",
-            copy: [
-              "Select specific windows to isolate a particular movement pattern (e.g., only the windows where the person was walking).",
-              "Compare metrics across a subset of windows without losing the context of the full recording.",
-              "Drill down from the Summary view into the Analytics view by selecting windows of interest.",
+              "In the Analytics tab, each window row has a small circular selection control on the left. Click any window row to select it. You can select multiple windows.",
+              "Once you select one or more windows, the rest of the analyzer updates to show only the data from those windows — the log table, the waveform, the summary statistics, and the visualizations all update automatically.",
+              "Click the Reset button to clear your selection and return to viewing all data.",
+              "This is useful for isolating a specific movement pattern — for example, selecting only the windows where the person was walking.",
             ],
           },
         ],
@@ -494,14 +410,13 @@ const docGroups: DocGroup[] = [
         icon: "bi-bar-chart",
         body: [
           {
-            heading: "Magnitude Histogram",
+            heading: "Histogram",
             copy: [
-              "Shows how your acceleration values are spread out. 20 bars (bins) divide up the range of magnitudes. Taller bars show values that appear more often.",
-              "A narrow peak means consistent, steady movement. Wide spread means varied, changing movement.",
+              "Shows how your acceleration values are spread out. Taller bars show values that appear more often. A narrow peak means consistent, steady movement. A wide spread means varied, changing movement.",
             ],
           },
           {
-            heading: "Frequency Spectrum (FFT)",
+            heading: "Frequency Spectrum",
             copy: [
               "Shows what 'frequencies' are present in your movement. Think of it like a musical chord — it shows which notes are playing. Walking typically shows strong peaks around 1–2 Hz (1–2 steps per second).",
               "Use this to identify walking cadence and rhythmic patterns in movement.",
@@ -544,7 +459,7 @@ const docGroups: DocGroup[] = [
           {
             heading: "Export a Text Report",
             copy: [
-              "Click 'Export Report' to generate a plain text summary of all your analytics: frame count, KSI, jerk, variance, stability assessment, and more.",
+              "Click 'Export Report' to generate a plain text summary of all your analytics: frame count, stability score, jerk, variance, stability assessment, and more.",
             ],
           },
         ],
@@ -566,7 +481,7 @@ const docGroups: DocGroup[] = [
           {
             heading: "What You See",
             copy: [
-              "Each row is one sensor reading. Columns show: a selection dot (click to select a frame), Time (ms), ax (X-axis acceleration, blue), ay (Y-axis acceleration, green), az (Z-axis acceleration, red), and |accel| (total magnitude).",
+              "Each row is one sensor reading. Columns show: a selection dot (click to select a frame), Time (ms), the three acceleration axes, and total magnitude.",
               "Click any row to select that frame — the waveform and 3D cube update instantly.",
             ],
           },
@@ -576,18 +491,18 @@ const docGroups: DocGroup[] = [
         id: "analytics-tab",
         title: "Analytics (Per-Window Breakdown)",
         eyebrow: "The Three Tabs",
-        summary: "Shows your data broken into chunks (windows), each with its own KSI score and classification.",
+        summary: "Shows your data broken into chunks, each with its own stability score and classification.",
         icon: "bi-window-stack",
         body: [
           {
             heading: "Window-by-Window Analysis",
             copy: [
-              "Your data is divided into 20-frame windows (~0.4 seconds each). Each window gets its own analysis with these columns:",
-              "Window ID — Unique label (W-001, W-002, etc.).",
+              "Your data is divided into short windows. Each window gets its own analysis with these details:",
+              "Window ID — Unique label for each window.",
               "Time — The end timestamp of this window.",
-              "Activity — What the system predicts is happening (Walking, Sitting, Standing, Stairs Up, Stairs Down).",
-              "KSI — The stability score for this window.",
-              "Jerk — Mean absolute jerk value.",
+              "Activity — What the system predicts is happening (Walking, Sitting, Standing, Stairs).",
+              "KSI — The stability score for this window (0–100).",
+              "Jerk — How abruptly movement changes.",
               "Variance — How much the acceleration varies.",
               "State — Color-coded badge: Optimal (green), Degraded (yellow), or Critical (red).",
             ],
@@ -598,7 +513,7 @@ const docGroups: DocGroup[] = [
         id: "summary-tab",
         title: "Summary (Overall Stats)",
         eyebrow: "The Three Tabs",
-        summary: "Shows aggregate statistics across all windows: average KSI, counts of each state, and the most common activity.",
+        summary: "Shows overall statistics: average stability score, counts of each state, and the most common activity.",
         icon: "bi-pie-chart",
         body: [
           {
@@ -624,13 +539,13 @@ const docGroups: DocGroup[] = [
         id: "api-endpoints",
         title: "How the Server Works",
         eyebrow: "ML Engine (Server)",
-        summary: "KineTrace has a Python server that can provide enhanced analysis. The frontend works fine with or without it.",
+        summary: "KineTrace has a server that provides enhanced analysis. The web analyzer works fine with or without it.",
         icon: "bi-cloud",
         body: [
           {
             heading: "Do You Need the Server?",
             copy: [
-              "No. The analyzer works entirely in your browser using local calculations. The server provides additional features like activity classification and TUG (Timed Up and Go) score predictions.",
+              "No. The web analyzer works entirely in your browser using local calculations. The server provides additional features like activity classification and more detailed predictions.",
               "If you want to run the server yourself:",
               "1. Make sure you have Python installed.",
               "2. Run 'python main.py' from the project folder.",
@@ -641,8 +556,7 @@ const docGroups: DocGroup[] = [
             heading: "Available Server Features",
             copy: [
               "Health check: /api/health — Tells you if the server is running.",
-              "Status check: /api/status — Shows if ML models are loaded.",
-              "Data analysis: /api/ingest — Upload a CSV file and get activity predictions, KSI scores, and TUG estimates.",
+              "Data analysis: /api/ingest — Upload a CSV file and get activity predictions, stability scores, and more.",
               "Sample data: /api/export/csv — Download a sample CSV.",
               "Real-time: /api/ws — WebSocket connection for streaming analysis.",
             ],

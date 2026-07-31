@@ -5,9 +5,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const items = [
   { id: "overview", label: "Overview" },
-  { id: "about", label: "About" },
+  { id: "about", label: "Why KineTrace" },
   { id: "method", label: "How It Works" },
-  { id: "ksi", label: "Try KSI" },
+  { id: "ksi", label: "Try It" },
   { id: "contact", label: "Contact" },
 ];
 

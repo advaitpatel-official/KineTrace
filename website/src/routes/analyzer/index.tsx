@@ -146,6 +146,16 @@ function AnalyzerDashboard() {
   const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [showMobileWarning, setShowMobileWarning] = useState(false);
+  const [showAppPopup, setShowAppPopup] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("kt-app-popup-dismissed");
+      return stored !== "true";
+    } catch {
+      return true;
+    }
+  });
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
+  const [disclaimerCheckbox, setDisclaimerCheckbox] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem("kt-disclaimer-accepted");
@@ -159,8 +169,6 @@ function AnalyzerDashboard() {
       localStorage.setItem("kt-disclaimer-accepted", String(disclaimerAccepted));
     } catch { }
   }, [disclaimerAccepted]);
-  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
-  const [disclaimerCheckbox, setDisclaimerCheckbox] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -675,6 +683,65 @@ function AnalyzerDashboard() {
         </div>
       )}
 
+      {showAppPopup && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
+          <div className="mx-auto w-full max-w-md rounded-2xl border border-hairline bg-background p-6 shadow-2xl animate-fade-up">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground/5 border border-hairline">
+                <i className="bi bi-phone text-sm" aria-hidden />
+              </span>
+              <h3 className="font-display text-lg tracking-tight">Two Ways to Use KineTrace</h3>
+            </div>
+            <div className="space-y-3 text-sm text-foreground/80 leading-relaxed">
+              <div className="rounded-xl border border-hairline bg-foreground/2 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <i className="bi bi-phone text-base text-foreground" aria-hidden />
+                  <span className="font-display font-medium">KineTrace Mobile App</span>
+                </div>
+                <p className="text-xs text-foreground/70">The easiest way to check your movement health. Download the app, put your phone in your pocket, take a walk — get your stability score instantly. No setup, no files, no technical knowledge needed.</p>
+              </div>
+              <div className="rounded-xl border border-hairline bg-foreground/2 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <i className="bi bi-laptop text-base text-foreground" aria-hidden />
+                  <span className="font-display font-medium">Web Analyzer (You Are Here)</span>
+                </div>
+                <p className="text-xs text-foreground/70">Designed for clinicians, researchers, and experienced users. Provides detailed charts, filters, and raw data analysis. You'll need to record your movement separately and upload the file.</p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground text-center mb-3">Download the Mobile App</p>
+              <div className="flex gap-3">
+                <a
+                  href="#"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-hairline px-4 py-2.5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                  iOS
+                </a>
+                <a
+                  href="#"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-hairline px-4 py-2.5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1zm15 3H6V5h12v1zm-2 3.5c0 .83-.67 1.5-1.5 1.5S13 10.33 13 9.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5z"/></svg>
+                  Android
+                </a>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAppPopup(false);
+                  try { localStorage.setItem("kt-app-popup-dismissed", "true"); } catch {}
+                }}
+                className="rounded-full border border-hairline px-5 py-2 font-mono text-[10px] uppercase tracking-wider text-foreground/70 transition-colors hover:bg-foreground hover:text-background"
+              >
+                Continue to Analyzer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showMobileWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.3)" }}>
           <div className="w-full max-w-sm rounded-2xl border border-hairline bg-background p-6 shadow-2xl animate-fade-up">

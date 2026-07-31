@@ -12,57 +12,55 @@ export const Route = createFileRoute("/")({
 
 const phases = [
   {
-    name: "Load Your Data",
+    name: "Take a Walk",
     tag: "Step 01",
-    desc: "Upload a CSV, TXT, or JSON file from any device that records movement — like a phone, smartwatch, or motion sensor. The system automatically finds the right columns (ax, ay, az, gx, gy, gz).",
-    meta: ["Works with — UCI HAR + MotionSense datasets", "Sample rate — 50 readings per second", "File types — CSV / TXT / JSON"],
+    desc: "Put your phone in your pocket or strap on your smartwatch. Go for a walk, climb some stairs, or just stand still. KineTrace works with any device you already own — no special equipment needed.",
+    meta: ["Works with any phone or smartwatch", "No setup required", "Just move naturally"],
   },
   {
-    name: "Make It Orientation-Free",
+    name: "We Analyze Your Movement",
     tag: "Step 02",
-    desc: "Phone in your pocket? Watch on your wrist? Sensor on your waist? We combine the X, Y, and Z axes into one single value using a simple math formula. This removes device orientation so the data is comparable no matter how you wear it.",
-    meta: ["Formula — √(x² + y² + z²)", "Why — orientation doesn't matter anymore", "Result — one clean signal instead of three"],
-  },
-  {
-    name: "Browse & Filter Your Data",
-    tag: "Step 03",
-    desc: "Scroll through your data up to 200 rows at a time. Use the slider to ignore tiny movements below a certain strength — this filters out noise so only meaningful motion is analyzed.",
-    meta: ["Default view — 50 rows per page", "Filter slider — set a minimum g-force", "Navigation — jump to first / previous / next / last page"],
-  },
-  {
-    name: "Choose a Processing Filter",
-    tag: "Step 04",
-    desc: "Pick from 8 different filters that clean up your signal and highlight different types of movement. Each filter changes how we calculate 'jerk' (how suddenly movement changes) and 'variance' (how spread out the movement is).",
-    meta: ["Filters available — 8 types", "Jerk scaling — 0.5× to 1.25×", "Variance shift — -0.18 to +0.08"],
+    desc: "Behind the scenes, KineTrace looks at the tiny details in your movement that are invisible to the human eye. It measures how smooth or shaky your steps are, how balanced you are, and how your body responds to different surfaces and activities.",
+    meta: ["Advanced analysis in seconds", "No technical knowledge needed", "Fully automatic"],
   },
   {
     name: "Get Your Stability Score",
-    tag: "Step 05",
-    desc: "Every 2.56-second chunk of data gets a KSI score from 0 to 100. The formula is: KSI = max(0, 100 - (50 × average jerk + 20 × standard deviation)). A high score means smooth, stable movement. A low score means shaky or chaotic movement.",
-    meta: ["Score range — 0 (very unsteady) to 100 (very steady)", "Formula weighs — jerk (suddenness) and std (spread)", "Results labeled — Optimal / Degraded / Critical"],
+    tag: "Step 03",
+    desc: "You get one simple number from 0 to 100. A high score means steady, confident movement. A low score means your movement might be shaky or unsteady. It's like a fitness score, but for how well you move and balance.",
+    meta: ["Score range — 0 (unsteady) to 100 (very steady)", "Color-coded results — green / yellow / red", "Easy to understand at a glance"],
   },
   {
-    name: "Explore & Export Results",
+    name: "See What Your Body Is Telling You",
+    tag: "Step 04",
+    desc: "KineTrace shows you your movement in beautiful, simple visuals. Watch your steps in real-time, see how your balance changes throughout the day, and spot trends you never noticed before. All of it designed to be clear and easy to understand.",
+    meta: ["Simple visual charts", "Real-time feedback", "Spot trends over time"],
+  },
+  {
+    name: "Share With Confidence",
+    tag: "Step 05",
+    desc: "Want to show your doctor, your physical therapist, or a family member? Export a simple report they can understand. No confusing data — just clear information about your movement health that anyone can read.",
+    meta: ["Export reports as PDF or images", "Share with your healthcare provider", "Track your progress over time"],
+  },
+  {
+    name: "Stay Proactive",
     tag: "Step 06",
-    desc: "View your data three ways: (1) the raw numbers table, (2) a breakdown window-by-window with KSI scores, jerk, and variance, and (3) a summary dashboard with overall stats. Export charts as images, data as JSON/CSV, or a full report as a text file.",
-    meta: ["Export — PNG / JSON / CSV / TXT", "Views — Raw log / Per-window analytics / Summary", "Visuals — Waveform graph, orientation mesh, histogram, frequency spectrum"],
+    desc: "Your body changes over time. KineTrace helps you stay on top of your movement health so you can catch changes early. Whether you're recovering from an injury, managing a condition, or just want to stay active as you age, KineTrace gives you the insight you need.",
+    meta: ["Track changes over weeks and months", "Catch issues early", "Stay confident and independent"],
   },
 ];
 
 const capabilities = [
-  { n: "01", title: "Works with any device orientation", body: "Whether your sensor is in a pocket, on a wrist, or clipped to a belt, the math strips away orientation differences. All movement data becomes comparable." },
-  { n: "02", title: "Fast browsing for large datasets", body: "Scroll through 10,000+ rows of data smoothly. The system only loads 50 rows at a time, with easy navigation to jump anywhere." },
-  { n: "03", title: "A stability score you can understand", body: "Each chunk of movement gets a single number from 0–100 and a color-coded label: Optimal (green), Degraded (yellow), or Critical (red). No complex charts to decode." },
-  { n: "04", title: "8 ways to clean up your signal", body: "Different filters highlight different types of movement. Butterworth smooths noise. Kalman adapts to changing conditions. Wavelet removes multi-layered interference. Pick what works for your data." },
-  { n: "05", title: "See your movement from every angle", body: "Watch the live waveform as it plays back. See a mesh rotate based on your sensor's pitch and roll. View histograms and frequency spectrums — all toggleable on and off." },
-  { n: "06", title: "Save and share your work", body: "Export the waveform as an image (PNG), download your full dataset as JSON, get a template for collecting new data, or generate a plain-text analytics report." },
+  { n: "01", title: "Works with what you already have", body: "Any phone, smartwatch, or wearable will do. No special equipment, no expensive sensors, no complicated setup. Just put it in your pocket and go." },
+  { n: "02", title: "Results you can actually understand", body: "Forget confusing charts and technical jargon. You get a simple score from 0 to 100 with a clear color — green means steady, yellow means caution, red means it's time to talk to someone." },
+  { n: "03", title: "Peace of mind for you and your family", body: "If you're worried about a loved one's balance, KineTrace gives you honest, objective feedback. No guesswork, no gut feelings — just real data about how they're moving." },
+  { n: "04", title: "Your privacy matters", body: "Your movement data stays on your device. You choose what to share and with whom. No accounts, no sign-ups, no data collection — just you and your results." },
+  { n: "05", title: "See your progress over time", body: "Take a walk today, another one next week, and another one next month. KineTrace shows you how your movement is changing, so you can celebrate improvements or take action early." },
+  { n: "06", title: "Free and open for everyone", body: "KineTrace is completely free to use. No subscriptions, no hidden fees, no premium features locked behind a paywall. Movement health should be accessible to everyone." },
 ];
 
 const demoOutput = {
   label: "Walking",
   ksi: 88,
-  jerk: 0.12,
-  variance: 0.021,
   state: "Optimal" as const,
   color: "bg-emerald-500/10 text-emerald-500" as const
 };
@@ -103,7 +101,7 @@ function Index() {
               KineTrace<span className="align-super text-lg not-italic">®</span>
             </h1>
             <p className="mt-4 max-w-2xl mx-auto text-base leading-relaxed text-foreground/70 md:text-lg">
-              Turn your phone or wearable into a movement stability tester. Upload sensor data, get a simple score.
+              Your phone already knows how you move. KineTrace helps you understand what it means — so you can stay steady, confident, and in control.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -133,32 +131,32 @@ function Index() {
 
         <section id="about" className="scroll-mt-24 px-6 pt-28 md:px-12">
           <div className="mx-auto max-w-6xl">
-            <h2 className="font-display text-4xl md:text-5xl">About</h2>
+            <h2 className="font-display text-4xl md:text-5xl">Why KineTrace?</h2>
             <div className="mt-8 max-w-full space-y-4 text-base leading-relaxed text-foreground/80">
               <p>
-                KineTrace is a tool that turns movement data from your phone, smartwatch, or wearable sensor into a simple stability score. Think of it like a fitness tracker, but instead of counting steps, it measures <strong>how steady or unsteady your movement is</strong>.
+                Every day, your body tells a story. The way you walk, the way you stand, the way you climb a flight of stairs — it all says something about your health. But most of us never get to hear that story. We only notice when something goes wrong.
               </p>
               <p>
-                You upload a recording of someone walking, standing, or moving — captured by any device with an accelerometer — and KineTrace analyzes the tiny details in their movement that are invisible to the human eye. It measures things like <strong>how suddenly they jerk</strong> (jerk) and <strong>how much their movement varies</strong> (variance).
+                KineTrace changes that. Using the sensors already built into your phone or smartwatch, KineTrace gives you a simple, honest look at how you move. No complicated charts. No confusing medical terms. Just a clear score that tells you if your movement is steady, shaky, or somewhere in between.
               </p>
               <p>
-                The result is a single score from 0 to 100. A high score means smooth, controlled movement. A low score means shaky or unstable movement that could signal a fall risk. <strong>Researchers and clinicians</strong> can use this to detect instability early — before someone actually falls.
+                Think of it like a check engine light for your body. It doesn't diagnose problems — it lets you know when something might need attention. <strong>Whether you're staying active, recovering from an injury, or just want peace of mind for yourself or a loved one, KineTrace puts the power of movement insight in your pocket.</strong>
               </p>
               <p>
-                <strong>It is important to note that kinetrace is a research prototype and should not be used to self diagnose, not only does this tool not have the capability to replace professional medical evaluation, it is not designed for that purpose either. At most, this tool should be used to give yourself an idea of whether you should consult a professional or not.</strong>
+                <strong>Important note:</strong> KineTrace is a research tool, not a medical device. It cannot diagnose conditions or replace a doctor's evaluation. Think of it as a friendly heads-up — a way to start a conversation with a healthcare professional if something seems off.
               </p>
             </div>
 
             {}
             <div className="w-full grid grid-cols-1 gap-10 md:grid-cols-2">
               <div className="mt-16 md:mt-0 hairline-t md:border-t-0 pt-10 flex flex-col">
-                <h3 className="font-display text-2xl md:text-3xl">Learn More</h3>
+                <h3 className="font-display text-2xl md:text-3xl">Built for Everyone</h3>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-foreground/80 flex-1">
                   <p>
-                    KineTrace is an open-source research prototype built to explore how consumer-grade sensors — like those in phones and smartwatches — can be used to assess movement stability. The project is released under a <strong>non-commercial license</strong>, meaning you are free to use, study, and modify the code for academic or personal research purposes, but not for commercial applications.
+                    KineTrace is an open-source project made for anyone who wants to understand their movement health. Whether you're a fitness enthusiast tracking your recovery, someone caring for an aging parent, or just curious about what your phone can tell you — KineTrace is for you.
                   </p>
                   <p>
-                    The full license text is available in the <a href="https://github.com/advaitpatel-official/KineTrace" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">GitHub repository</a> and in the footer below. If you are interested in collaborating or have questions about licensing, please reach out via the contact information below.
+                    The project is completely free and open-source for non commercial use. No subscriptions, no data collection, no hidden agenda. We believe movement health information should be accessible to everyone, not just people with expensive equipment or medical training. The full license is available on GitHub and at the bottom of this website. 
                   </p>
                 
                 </div>
@@ -197,11 +195,11 @@ function Index() {
                 </div>
                 <div className="mt-auto pt-4">
                   <a
-                    href="/documentation#for-trial-holders"
+                    href="/documentation"
                     className="inline-flex items-center gap-2 rounded-full border border-hairline px-5 py-2.5 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
                   >
                     <i className="bi bi-clipboard-check" aria-hidden />
-                    View Trial Guidelines
+                    Learn More
                   </a>
                 </div>
               </div>
@@ -251,7 +249,7 @@ function Index() {
         <section className="px-6 pt-28 md:px-12">
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-12">
             <div className="md:col-span-4">
-              <h2 className="font-display text-4xl md:text-5xl">What It Can Do</h2>
+              <h2 className="font-display text-4xl md:text-5xl">Why People Love It</h2>
             </div>
             <div className="md:col-span-8 divide-y divide-hairline hairline-t hairline-b">
               {capabilities.map((c) => (
@@ -268,11 +266,10 @@ function Index() {
         <section className="px-6 pt-32 md:px-12">
           <div className="mx-auto max-w-6xl grid grid-cols-1 gap-10 md:grid-cols-12">
             <blockquote className="md:col-span-8 font-display text-3xl leading-[1.15] md:text-4xl">
-              "We wanted a way to turn raw phone sensor data into something a doctor could actually use.
-              KSI is that number — one score that tells you if movement is steady or not."
+              "Movement is one of the most powerful signals our bodies give us. KineTrace makes that signal clear — so anyone can listen."
             </blockquote>
             <div className="md:col-span-4 self-end font-mono text-xs text-muted-foreground md:text-right">
-             - KineTrace Development Notes
+             - KineTrace
             </div>
           </div>
         </section>
@@ -281,17 +278,17 @@ function Index() {
           <div className="mx-auto max-w-6xl">
             <h2 className="font-display text-4xl md:text-5xl">Try It Now</h2>
             <p className="mt-4 max-w-2xl text-foreground/75">
-              No setup needed. Open the analyzer, upload a short movement recording from your phone or wearable, and get an instant stability score, activity classification, and full breakdown of your data.
+              No sign-up, no setup, no cost. Just grab your phone, take a short walk, and see your movement stability score in seconds. It's that simple.
             </p>
 
             <div className="mt-10 glass rounded-3xl p-6 md:p-10">
               <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
                 <div className="md:col-span-7">
                   <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    The Analyzer is Live
+                    Ready When You Are
                   </div>
                   <h3 className="mt-3 font-display text-3xl md:text-4xl">
-                    Upload movement data, get a stability score back.
+                    Upload a recording and see your score.
                   </h3>
                   <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
                     <Link
@@ -299,7 +296,7 @@ function Index() {
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-transform hover:-translate-y-0.5"
                     >
                       <i className="bi bi-box-arrow-up-right" aria-hidden />
-                      Open the analyzer
+                      Get your stability score
                     </Link>
                   </div>
                 </div>
@@ -310,7 +307,7 @@ function Index() {
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         {demoOutput.label}
                       </span>
-                      <span className="font-mono text-[10px] text-muted-foreground">window · 2.56s</span>
+                      <span className="font-mono text-[10px] text-muted-foreground">sample result</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -326,17 +323,6 @@ function Index() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                        <span>Jerk (suddenness)</span>
-                        <span className="text-foreground/80 font-medium">{demoOutput.jerk.toFixed(2)} m/s³</span>
-                      </div>
-                      <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                        <span>Variance (spread)</span>
-                        <span className="text-foreground/80 font-medium">{demoOutput.variance.toFixed(3)}</span>
-                      </div>
-                    </div>
-
                     <div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-foreground/10">
                         <div
@@ -348,16 +334,15 @@ function Index() {
                         />
                       </div>
                       <div className="mt-1 flex justify-between font-mono text-[9px] text-muted-foreground">
-                        <span>very unsteady 0</span>
-                        <span className="text-foreground/80">{demoOutput.ksi} KSI</span>
-                        <span>100 very steady</span>
+                        <span>unsteady 0</span>
+                        <span className="text-foreground/80">{demoOutput.ksi}</span>
+                        <span>100 steady</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground pt-1 border-t border-hairline">
                       <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span>ML Engine Connected</span>
-                      <span className="ml-auto">{demoOutput.label} · LP filter</span>
+                      <span>Ready to analyze</span>
                     </div>
                   </div>
                 </div>

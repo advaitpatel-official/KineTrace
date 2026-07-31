@@ -3,7 +3,7 @@ export function ContactSection() {
     <section id="contact" className="scroll-mt-24 px-6 pt-12 pb-8 md:pb-16 md:px-12">
       <div className="mx-auto max-w-6xl">
         <p className="w-full text-foreground/75">
-          Are you a researcher, clinician, or someone working with movement data? If you have questions or want to collaborate, please reach out, I would be happy and grateful to help.
+          Have a question or want to collaborate? Want to share your experience? Thinking about how KineTrace could help someone you care about? we would love to hear from you — reach out anytime.
         </p>
 
         <div className="mt-16 hairline-t">
