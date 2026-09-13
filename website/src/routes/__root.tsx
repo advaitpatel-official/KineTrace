@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "KineTrace — Understand Your Movement Health" },
       { name: "description", content: "Turn your phone into a movement health tracker. KineTrace gives you a simple stability score from your everyday movements — no special equipment needed." },
       { name: "author", content: "KineTrace" },
+      { property: "og:site_name", content: "KineTrace" },
       { property: "og:title", content: "KineTrace — Understand Your Movement Health" },
       { property: "og:description", content: "Turn your phone into a movement health tracker. KineTrace gives you a simple stability score from your everyday movements — no special equipment needed." },
       { property: "og:type", content: "website" },
@@ -145,6 +146,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <title>KineTrace — Understand Your Movement Health</title>
         <meta name="theme-color" content="#ffffff" />
         <script
           dangerouslySetInnerHTML={{
