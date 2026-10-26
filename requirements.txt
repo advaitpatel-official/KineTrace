@@ -4,3 +4,4 @@ pandas
 scikit-learn
 python-multipart
 joblib
+certifi>=2026.10.19
